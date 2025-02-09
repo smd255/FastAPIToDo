@@ -4,9 +4,9 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from routers.memo import router as memo_router
 
-#===========================================
+# ===========================================
 # 起動ファイル
-#===========================================
+# ===========================================
 app = FastAPI()
 
 # CORS設定
@@ -25,6 +25,7 @@ app.add_middleware(
 # ルーターのマウント
 app.include_router(memo_router)
 
+
 # バリデーションエラーのカスタムハンドラ
 @app.exception_handler(ValidationError)
 async def validation_exception_handler(exc: ValidationError):
@@ -37,6 +38,6 @@ async def validation_exception_handler(exc: ValidationError):
             # Pydanticが提供するエラーのリスト
             "detail": exc.errors(),
             # バリデーションエラーが発生した時の入力データ
-            "body": exc.model
-        }
+            "body": exc.model,
+        },
     )
