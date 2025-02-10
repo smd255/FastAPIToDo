@@ -253,6 +253,16 @@ document.addEventListener('DOMContentLoaded', () =>{
             const memoId = event.target.dataset.id;
             // 削除関数を実行
             await deleteMemo(memoId);
+        // クリックされた要素がチェックボックスだった場合の処理
+        } else if(event.target.type === 'checkbox') {
+            const isChecked = event.target.checked;
+            if (isChecked) {
+                console.log('チェックが入りました');
+                // チェックが入った時の処理
+            } else {
+                console.log('チェックが外れました');
+                // チェックが外れた時の処理
+            }
         }
     });
 });
