@@ -159,6 +159,7 @@ async function fetchAndDisplayMemos(){
             const row = document.createElement('tr');
             // 行の中身：タイトル、説明、編集と削除ボタン
             row.innerHTML = `
+                <td><input type="checkbox" ${memo.is_check ? 'checked' : ''}></td>
                 <td>${memo.title}</td>
                 <td>${memo.description}</td>
                 <td>

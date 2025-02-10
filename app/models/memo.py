@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from db import Base
 from datetime import datetime
 
@@ -16,6 +16,8 @@ class Memo(Base):
     title = Column(String(50), nullable=False)
     # 詳細：未入力可
     description = Column(String(255), nullable=True)
+    # チェック状況：True:チェック有り, False：チェック無し
+    is_check = Column(Boolean, default=False)
     # 作成日時
     created_at = Column(DateTime, default=datetime.now())
     # 更新日時

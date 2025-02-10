@@ -21,6 +21,13 @@ class InsertAndUpdateMemoSchema(BaseModel):
         example="会議で話すトピック：プロジェクトの進捗状況",
     )
 
+    # チェックボックスのチェック状況
+    is_check: bool = Field(
+        default=False,
+        description="True:チェック有り, False:チェック無し",
+        exmaple=True,
+    )
+
 
 # メモ情報を表すスキーマ
 class MemoSchema(InsertAndUpdateMemoSchema):
