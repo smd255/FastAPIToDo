@@ -86,6 +86,7 @@ async def update_memo(
     if memo:
         memo.title = target_data.title
         memo.description = target_data.description
+        memo.is_check = target_data.is_check
         await db_session.commit()
         await db_session.refresh(memo)
         print(">>> データ更新完了")
