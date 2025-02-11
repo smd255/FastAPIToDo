@@ -10,10 +10,11 @@ import asyncio
 base_dir = os.path.dirname(__file__)
 
 # データベースのURL
-DATABASE_URL = 'sqlite+aiosqlite:///'+os.path.join(base_dir, 'memodb.sqlite')
+DATABASE_URL = "sqlite+aiosqlite:///" + os.path.join(base_dir, "memodb.sqlite")
 
 # 非同期エンジンの作成
 engine = create_async_engine(DATABASE_URL, echo=True)
+
 
 # データベースの初期化
 # SQLAlucehmy に非同期関数ないため、外部から非同期にしている。
@@ -25,6 +26,7 @@ async def init_db():
         print(">>> 既存のテーブルを削除しました。")
         # テーブルを作成
         await conn.run_sync(Base.metadata.create_all)
+
 
 # スクリプトで実行時のみ実行
 if __name__ == "__main__":

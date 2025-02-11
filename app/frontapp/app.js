@@ -159,6 +159,7 @@ async function fetchAndDisplayMemos(){
             const row = document.createElement('tr');
             // 行の中身：タイトル、説明、編集と削除ボタン
             row.innerHTML = `
+                <td><input type="checkbox" data-id="${memo.memo_id}" ${memo.is_check ? 'checked' : ''}></td>
                 <td>${memo.title}</td>
                 <td>${memo.description}</td>
                 <td>
@@ -201,6 +202,39 @@ async function editMemo(memoId){
     // 新規登録ボタンを非表示にする
     document.querySelector('#createMemoForm button[type="submit"]').style.display = 'none';
 }
+
+
+/**
+ * 特定のメモのチェックボックスの状態更新用非同期関数
+ */
+async function updateCheckBox(memoId, isChecked){    
+    // サーバーから特定のIDのメモのデータを取得するリクエストを送信
+    const response = await fetch(`${apiUrl}${memoId}`);
+    // レスポンスのJSONを解析し、メモデータを取得
+    const memo = await response.json();
+    // レスポンスが正常でなければ、エラーメッセージを表示し、処理を終了
+    if (!response.ok){
+        await displayMessage(memo.detail);
+        return;
+    }   
+    memo.is_check = isChecked;  //チェックボックス状態を反映
+    //更新
+    try{
+        // APIに「POSTリクエスト」を送信してメモを更新。
+        // headersに'Content-Type'を'application/json'に設定。
+        // JSON形式のデータを送信
+        const response = await fetch(`${apiUrl}${memoId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(memo)
+        });
+    } catch (error) {
+        // ネットワークエラーやその他の理由でリクエスト自体が失敗した場合
+        console.error('チェックボックス更新中にエラーが発生しました：', error);
+    }
+} 
+
+
 
 /**
  * ドキュメントの読み込みが完了した後に実行されるイベントリスナー
@@ -252,6 +286,11 @@ document.addEventListener('DOMContentLoaded', () =>{
             const memoId = event.target.dataset.id;
             // 削除関数を実行
             await deleteMemo(memoId);
+        // クリックされた要素がチェックボックスだった場合の処理
+        } else if(event.target.type === 'checkbox') {
+            const memoId = event.target.dataset.id;
+            const isChecked = event.target.checked;
+            await updateCheckBox(memoId, isChecked);    //チェックボックス更新
         }
     });
 });
