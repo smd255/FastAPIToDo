@@ -1,10 +1,9 @@
 document.addEventListener("DOMContentLoaded", function () {
     const formTitle = document.getElementById("form-title");
     const submitBtn = document.getElementById("submit-btn");
-    const toggleLink = document.getElementById("toggle-link");
     const toggleText = document.getElementById("toggle-text"); // メッセージ用
 
-    let isRegister = false; // 初期状態はログイン
+    let isRegister = false; // 初期状態はログイン要求ページ
 
     function updateForm() {
         if (isRegister) {
