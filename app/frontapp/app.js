@@ -203,6 +203,13 @@ async function editMemo(memoId){
     document.querySelector('#createMemoForm button[type="submit"]').style.display = 'none';
 }
 
+/**
+ * チェックボックス状態取得
+ */
+function getCheckboxState(memoId) {
+    const checkbox = document.querySelector(`input[type="checkbox"][data-id="${memoId}"]`);
+    return checkbox ? checkbox.checked : null;
+}
 
 /**
  * 特定のメモのチェックボックスの状態更新用非同期関数
@@ -251,13 +258,14 @@ document.addEventListener('DOMContentLoaded', () =>{
         // タイトルと説明の入力値を取得
         const title = document.getElementById('title').value;
         const description = document.getElementById('description').value;
-        // メモオブジェクトを作成
-        const memo = { title, description };
 
         // 編集中のメモIDがある場合は更新、なければ新規作成を実行
         if (editingMemoId){
+            const is_check = getCheckboxState(editingMemoId);
+            const memo = { title, description, is_check };
             await updateMemo(memo);
         } else {
+            const memo = { title, description };    //新規作成時はチェックボックス情報不要
             await createMemo(memo);
         }
     };
@@ -267,8 +275,9 @@ document.addEventListener('DOMContentLoaded', () =>{
         // タイトルと説明の入力値を取得
         const title = document.getElementById('title').value;
         const description = document.getElementById('description').value;
+        const is_check = getCheckboxState(editingMemoId);
         // 更新関数を実行
-        await updateMemo({ title, description });
+        await updateMemo({ title, description, is_check });
     };
 
     // メモ一覧テーブル内のクリックイベントを監視
