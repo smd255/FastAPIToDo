@@ -1,0 +1,40 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 2px solid #ccc;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    background-color: #fff;
+}
+
+.navbar h1 a {
+    text-decoration: none;
+    color: black;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links a {
+    text-decoration: none;
+    background-color: #f0f0f0;
+    padding: 8px 12px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-left: 20px; /* 適切な間隔を設定 */
+}
