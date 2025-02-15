@@ -8,8 +8,10 @@
 </head>
 <body>
     <!-- ヘッダーを挿入するための要素 -->
-    <div id="header"></div>
-    <div class="container">
+    <header>
+        <div id="header"></div>
+    </header>
+    <main class="container">
         <h2 id="form-title"><!-- ログイン/新規登録,js可変 --></h2>
 
         <label for="username">ユーザー名</label>
@@ -21,11 +23,11 @@
         <button id="submit-btn"><!-- ログイン/新規登録,js可変 --></button>   
 
         <p class="toggle-text" id="toggle-text"><!-- メッセージjsで可変 --></p>
-    </div>
+    </main>
 
     <script src="app.js"></script>
     <script>
-        fetch("../components/header.html")
+        fetch("../base.html")
             .then(response => response.text())
             .then(data => {
                 document.getElementById("header").innerHTML = data;

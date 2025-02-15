@@ -10,7 +10,9 @@
 </head>
 <body>
     <!-- ヘッダーを挿入するための要素 -->
-    <div id="header"></div>
+    <header>
+        <div id="header"></div>
+    </header>
     <!-- メモ作成フォームのコンテナ -->
     <div class="form-container">
         <h2 id="formTitle">メモの作成</h2>
@@ -52,7 +54,7 @@
      <!-- JavaScriptファイルのリンク -->
      <script src="app.js"></script>
      <script>
-        fetch("../components/header.html")
+        fetch("../base.html")
             .then(response => response.text())
             .then(data => {
                 document.getElementById("header").innerHTML = data;
