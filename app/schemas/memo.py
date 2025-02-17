@@ -37,3 +37,10 @@ class MemoSchema(InsertAndUpdateMemoSchema):
         description="メモを一意に識別するID番号。データベースで自動的に割り当てられます。",
         example=123,
     )
+
+    # メモを登録したユーザーのID
+    # user_id: int = Field(
+    #     ...,
+    #     description="メモを登録したユーザーのID",
+    #     example=123,
+    # )
