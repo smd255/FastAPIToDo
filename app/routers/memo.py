@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from schemas.memo import InsertAndUpdateMemoSchema, MemoSchema, ResponseSchema
+from schemas.util import ResponseSchema
+from schemas.memo import InsertAndUpdateMemoSchema, MemoSchema
 import cruds.memo as memo_crud
 import db
 

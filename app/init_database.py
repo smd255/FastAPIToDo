@@ -1,6 +1,7 @@
 import os
 from sqlalchemy.ext.asyncio import create_async_engine
-from models.memo import Base
+from models.memo import Base as memo_Base
+from models.auth import Base as auth_Base
 import asyncio
 
 # ============================================
@@ -22,10 +23,12 @@ async def init_db():
     print("=== データベースの初期化を開始 ===")
     async with engine.begin() as conn:
         # 既存のテーブルを削除
-        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(memo_Base.metadata.drop_all)
+        await conn.run_sync(auth_Base.metadata.drop_all)
         print(">>> 既存のテーブルを削除しました。")
         # テーブルを作成
-        await conn.run_sync(Base.metadata.create_all)
+        await conn.run_sync(memo_Base.metadata.create_all)
+        await conn.run_sync(auth_Base.metadata.create_all)
 
 
 # スクリプトで実行時のみ実行
