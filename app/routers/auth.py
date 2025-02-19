@@ -10,7 +10,7 @@ router = APIRouter(tags=["Auth"], prefix="/auth")
 
 
 # 新規登録のエンドポイント
-@router.post("/", response_model=ResponseSchema)
+@router.post("/register", response_model=ResponseSchema)
 async def create_user(
     user: InsertAndUpdateUserSchema, db: AsyncSession = Depends(db.get_dbsession)
 ):
