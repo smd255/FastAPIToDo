@@ -24,4 +24,14 @@ async def create_user(
 
 
 # ログインのエンドポイント
-# どのURLから？ユーザー毎
+@router.post("/login", response_model=ResponseSchema)
+async def login(
+    user: InsertAndUpdateUserSchema, db: AsyncSession = Depends(db.get_dbsession)
+):
+    try:
+        # ログイン処理
+        await auth_crud.login(db, user)
+        return ResponseSchema(message="ログイン成功しました")
+    except Exception:
+        # 登録失敗時にHTTP400エラー(ユーザー名、パスワードミス以外の理由)
+        raise HTTPException(status_code=400, detail="ログインに失敗しました。")

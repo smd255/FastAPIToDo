@@ -14,4 +14,4 @@ class User(Base):
     # ユーザー名：未入力不可
     username = Column(String(50), nullable=False)
     # ハッシュ化パスワード：未入力不可
-    hasshed_password = Column(String(50), nullable=False)
+    hashed_password = Column(String(255), nullable=False)

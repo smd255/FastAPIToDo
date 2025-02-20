@@ -33,7 +33,7 @@ class UserSchema(InsertAndUpdateUserSchema):
 
     # ハッシュ化されたパスワード
     # TODO:このくらす軽油の受け渡しは妥当か？
-    hasshed_password: str = Field(
+    hashed_password: str = Field(
         description="ハッシュ化されたパスワード",
         example="????",
         # min_length=8,
