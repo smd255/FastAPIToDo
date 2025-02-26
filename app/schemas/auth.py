@@ -38,3 +38,15 @@ class UserSchema(InsertAndUpdateUserSchema):
         example="????",
         # min_length=8,
     )
+
+
+# ログイン時のトークン生成結果のスキーマ
+class ResponseTokenSchema(BaseModel):
+    # 処理結果のメッセージ。このフィールドは必須。
+    access_token: str = Field(
+        description="生成したトークン",
+    )
+    token_type: str = Field(
+        description="トークンタイプ",
+        example="bearer",
+    )

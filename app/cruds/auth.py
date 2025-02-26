@@ -1,23 +1,10 @@
-from datetime import timedelta, datetime, timezone
-import jwt
-from typing import Union
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+
 from passlib.context import CryptContext
 import schemas.auth as auth_schema
 import models.auth as auth_model
-
-# セキュリティ設定
-# TODO:本番では別にする
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-
-# Bearerトークンの設定
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # パスワードハッシュ化,検証設定
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -53,16 +40,16 @@ async def insert_user(
 
 # ログイン
 # POST
-async def login(
+async def verify_user(
     db_session: AsyncSession, user_data: auth_schema.InsertAndUpdateUserSchema
-) -> dict | None:
+) -> auth_model.User:
     """
     ユーザーの検証
     Ards:
         db_session (AsyncSession): 非同期DBセッション
         user_data(InsertAndUpdateUserSchema): ログインするユーザーのデータ
     Return:
-        dict: アクセストークン, トークンタイプ
+        認証できたユーザー
     """
     print("=== ユーザー照合開始 ===")
     result = await db_session.execute(
@@ -83,12 +70,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = _create_access_token(
-        data={"sub": user.user_id}, expires_delta=access_token_expires
-    )
-
-    return {"access_token": access_token, "token_type": "bearer"}
+    return user
 
 
 # TODO：ユーザー情報の削除, 更新
@@ -105,15 +87,3 @@ def _verify_password(plain_password: str, hashed_password: str):
 # パスワードハッシュ化
 def _get_password_hash(password):
     return pwd_context.hash(password)
-
-
-# アクセストークン生成
-def _create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
