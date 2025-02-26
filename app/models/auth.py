@@ -43,7 +43,7 @@ class UserAccessToken(Base):
     )
     # トークン有効期限
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    # トークンの有効/無効
+    # トークンの有効/無効 ?
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # ユーザーテーブルとのrelation
     user = relationship("User", back_populates="access_tokens")
@@ -68,7 +68,7 @@ class UserRefreshToken(Base):
     )
     # トークンの有効期限
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    # トークンの有効/無効
+    # トークンの有効/無効 ?
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     # ユーザーテーブルとのrelation
     user = relationship("User", back_populates="refresh_tokens")
