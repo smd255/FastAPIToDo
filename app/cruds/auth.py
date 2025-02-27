@@ -45,7 +45,7 @@ async def verify_user(
 ) -> auth_model.User:
     """
     ユーザーの検証
-    Ards:
+    Args:
         db_session (AsyncSession): 非同期DBセッション
         user_data(InsertAndUpdateUserSchema): ログインするユーザーのデータ
     Return:
@@ -79,7 +79,7 @@ async def verify_user(
 # アクセストークン保存
 async def create_access_token(
     db_session: AsyncSession, schema: auth_schema.AccessTokenSchema
-):
+) -> auth_model.UserAccessToken:
     print("=== アクセストークン保存開始 ===")
     new_token = auth_model.UserAccessToken(
         user_id=schema.user_id,
@@ -91,11 +91,13 @@ async def create_access_token(
     await db_session.refresh(new_token)
     print(">>> アクセストークン保存完了")
 
+    return new_token
+
 
 # リフレッシュトークン保存
 async def create_reflesh_token(
     db_session: AsyncSession, schema: auth_schema.RefleshTokenSchema
-):
+) -> auth_model.UserRefreshToken:
     print("=== リフレッシュトークン保存開始 ===")
     new_token = auth_model.UserRefreshToken(
         user_id=schema.user_id,
@@ -106,6 +108,8 @@ async def create_reflesh_token(
     await db_session.commit()
     await db_session.refresh(new_token)
     print(">>> リフレッシュトークン保存完了")
+
+    return new_token
 
 
 # =============================================

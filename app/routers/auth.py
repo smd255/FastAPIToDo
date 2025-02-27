@@ -1,32 +1,24 @@
-from util import unique_string
-from datetime import timedelta, datetime, timezone
-import jwt
-from typing import Union
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import Response
-from config import settings
-from schemas.util import ResponseSchema
 
-import schemas.auth as auth_schema
+from config import settings, security
+from schemas.util import ResponseSchema
+from services import auth as auth_service
 import cruds.auth as auth_crud
 import db
 
 # ルーターを作成し、タグとURLパスのプレフィックスを認定
 router = APIRouter(tags=["Auth"], prefix="/auth")
 
-# セキュリティ設定
-# TODO:本番では別にする
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-
 # Bearerトークンの設定
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 
+# =============================================
+# ルート関数
+# =============================================
 # 新規登録のエンドポイント
 @router.post("/register", response_model=ResponseSchema)
 async def create_user(
@@ -52,62 +44,44 @@ async def login(
     try:
         # ユーザー, パスワード認証
         user = await auth_crud.verify_user(db, data)
-        # トークンの発行
-        # access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-        # access_token = _create_access_token(
-        #     data={"sub": user.user_id}, expires_delta=access_token_expires
-        # )
         # JWTトークンの生成とクッキーへの設定
-        await _create_tokens(user.id, db, is_admin=False, response=response)
+        await auth_service.create_tokens(user.id, db, is_admin=False, response=response)
         return ResponseSchema(message="ログイン成功しました")
-        # return {"access_token": access_token, "token_type": "bearer"}
-        # return ResponseSchema(message="ログイン成功しました")
     except Exception:
         # 登録失敗時にHTTP400エラー(ユーザー名、パスワードミス以外の理由)
         raise HTTPException(status_code=400, detail="ログインに失敗しました。")
 
 
-# =============================================
-# 内部関数
-# =============================================
-# アクセストークン生成
-# def _create_access_token(data: dict, expires_delta: Union[timedelta, None] = None):
-#     to_encode = data.copy()
-#     if expires_delta:
-#         expire = datetime.now(timezone.utc) + expires_delta
-#     else:
-#         expire = datetime.now(timezone.utc) + timedelta(minutes=15)
-#     to_encode.update({"exp": expire})
-#     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-#     return encoded_jwt
-
-
-# アクセストークン生成
-async def _create_tokens(user_id: int, db: AsyncSession, response: Response):
-    # ユニークなキーを生成
-    access_key = unique_string(50)
-    refresh_key = unique_string(100)
-
-    # トークンの有効期限を設定
-    at_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    rt_expires = timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES)
-
-    # アクセストークン保存
-    # TODO: 時間はこれで良いか？
-    await auth_crud.create_access_token(
-        db_session=db,
-        token=auth_schema.AccessTokenSchema(
-            user_id=user_id, access_key=access_key, expires_at=at_expires
-        ),
+# トークンのリフレッシュ
+@router.post("/refresh", status_code=status.HTTP_200_OK, response_model=ResponseSchema)
+async def user_refresh_token(
+    response: Response,
+    db: AsyncSession = Depends(db.get_dbsession),
+    access_token: str = Depends(auth_service.get_token_from_cookie),
+    refresh_token: str = Depends(auth_service.get_refresh_token_from_cookie),
+) -> bool:
+    rt_token_payload = auth_service.get_token_payload(
+        refresh_token, security.SECRET_KEY
     )
 
-    # リフレッシュトークン保存
-    await auth_crud.create_reflesh_token(
-        db_session=db,
-        token=auth_schema.RefleshTokenSchema(
-            user_id=user_id, access_key=refresh_key, expires_at=rt_expires
-        ),
-    )
+    if not rt_token_payload:
+        return ResponseSchema(message="エラー。リフレッシュトークンがありません")
 
-    # アクセストークンのペイロードを作成
-    ここから
+    at_token_payload = auth_service.get_token_payload(access_token, security.SECRET_KEY)
+    if not at_token_payload:
+        return ResponseSchema(message="エラー。アクセストークンがありません")
+    rt_id = rt_token_payload.get("jti")
+    at_id = at_token_payload.get("jti")
+    if not rt_id or not at_id:
+        return ResponseSchema(message="エラー。トークンがありません")
+
+    # TODO: DBからの取得処理はCRUDで実施する
+    user_token = user_repository.invalidate_token(db, at_id, rt_id)
+    if not user_token:
+        return False
+    user: User = user_token.user
+
+    # Generate the JWT token
+    # TODO: 自作関数であっているのか？　リフレッシュトークンまで再生成してしまいそう
+    create_tokens(user.id, session, is_admin=False, response=response)
+    return True
