@@ -93,6 +93,7 @@ async def create_tokens(user_id: int, db: AsyncSession, response: Response):
     )
 
 
+# アクセストークンの取得
 async def get_token_from_cookie(
     access_token: Optional[str] = Cookie(None, alias="access_token")
 ) -> str:
@@ -119,6 +120,7 @@ async def get_token_from_cookie(
     return access_token
 
 
+# リフレッシュトークンの取得
 async def get_refresh_token_from_cookie(
     refresh_token: Optional[str] = Cookie(None, alias="refresh_token")
 ) -> str:
@@ -145,6 +147,7 @@ async def get_refresh_token_from_cookie(
     return refresh_token
 
 
+# ペイロードの取得
 async def get_token_payload(
     access_token: str = Depends(get_token_from_cookie),
     secret_key: str = security.SECRET_KEY,
@@ -169,6 +172,14 @@ async def get_token_payload(
         raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
+
+# トークンの無効化(削除)
+async def invalidate_token(db: AsyncSession, at_id: str, rt_id: str):
+    # アクセストークンの無効化
+    auth_crud.invalidate_actoken(db_session=db, at_id=at_id)
+    # リフレッシュトークンの無効化
+    auth_crud.invalidate_retoken(db_session=db, rt_id=rt_id)
 
 
 # =============================================

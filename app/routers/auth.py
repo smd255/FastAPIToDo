@@ -3,10 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import Response
 
-from config import settings, security
+from config import security
 from schemas.util import ResponseSchema
 from services import auth as auth_service
 import cruds.auth as auth_crud
+import models.auth as auth_model
 import db
 
 # ルーターを作成し、タグとURLパスのプレフィックスを認定
@@ -45,7 +46,7 @@ async def login(
         # ユーザー, パスワード認証
         user = await auth_crud.verify_user(db, data)
         # JWTトークンの生成とクッキーへの設定
-        await auth_service.create_tokens(user.id, db, is_admin=False, response=response)
+        await auth_service.create_tokens(user.id, db, response=response)
         return ResponseSchema(message="ログイン成功しました")
     except Exception:
         # 登録失敗時にHTTP400エラー(ユーザー名、パスワードミス以外の理由)
@@ -75,13 +76,15 @@ async def user_refresh_token(
     if not rt_id or not at_id:
         return ResponseSchema(message="エラー。トークンがありません")
 
-    # TODO: DBからの取得処理はCRUDで実施する
-    user_token = user_repository.invalidate_token(db, at_id, rt_id)
+    # トークンの無効化
+    # TODO:"POST"といっておきながらここの処理はPUT相当。要件等
+    user_token = await auth_service.invalidate_token(db, at_id, rt_id)
     if not user_token:
         return False
-    user: User = user_token.user
+    user: auth_model.User = user_token.user
 
-    # Generate the JWT token
-    # TODO: 自作関数であっているのか？　リフレッシュトークンまで再生成してしまいそう
-    create_tokens(user.id, session, is_admin=False, response=response)
+    # トークンの生成
+    # アクセストークン、リフレッシュトークン両方生成
+    # リフレッシュトークンの有効期間もリセットされることになる。
+    auth_service.create_tokens(user.id, db, response=response)
     return True
