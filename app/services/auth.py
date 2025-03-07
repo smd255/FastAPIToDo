@@ -13,6 +13,7 @@ from util import unique_string
 import schemas.auth as auth_schema
 import cruds.auth as auth_crud
 
+AuthService, get_auth_service の定義が必要
 
 # =============================================
 # 公開関数
