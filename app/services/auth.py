@@ -2,6 +2,7 @@ from typing import Optional
 from datetime import timedelta, datetime, timezone
 import jwt
 
+from fastapi import ExpiredSignatureError, InvalidTokenError
 from fastapi import Cookie, HTTPException, Depends
 from fastapi.responses import Response
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,11 +14,67 @@ from util import unique_string
 import schemas.auth as auth_schema
 import cruds.auth as auth_crud
 
-AuthService, get_auth_service の定義が必要
+
+# =============================================
+# クラス定義
+# =============================================
+class AuthService:
+    def __init__(self):
+        pass
+
+    # トークンの検証
+    async def validate_token(self, token: str) -> bool:
+        try:
+            # トークンをデコードし、署名とペイロードを検証
+            decoded_token = jwt.decode(token, self.secret_key, algorithms=["HS256"])
+            if decoded_token is not None:
+                # トークンが有効な場合はTrueを返す
+                # 例外発生により無効判定
+                return True
+            print("トークンの取得失敗")
+            return False
+        except ExpiredSignatureError:
+            # トークンが期限切れの場合の処理
+            print("トークンの期限切れ")
+            return False
+        except InvalidTokenError:
+            # トークンが無効な場合の処理
+            print("トークンが無効")
+            return False
+        except Exception as e:
+            # その他のエラーが発生した場合の処理
+            print(f"その他エラー発生: {str(e)}")
+
+    async def refresh_token(self, response: Response, token: str) -> bool:
+        作成中
+        # リフレッシュトークンのロジック
+        # 新しいアクセストークンを発行して、レスポンスに設定
+        if token == "refresh":
+            new_access_token = "new_valid_access_token"
+            response.set_cookie(key="access_token", value=new_access_token)
+            return True
+        return False
+
+    async def get_user_id_from_token(self, token: str) -> Optional[str]:
+        作成中
+        # トークンからユーザーIDを取得するロジック
+        # ここでは簡単にトークンが"valid"ならユーザーIDを返す
+        if token == "valid":
+            return "user_id"
+        return None
+
 
 # =============================================
 # 公開関数
 # =============================================
+# シングルトンとしてAuthServiceインスタンスを返す
+auth_service_instance = AuthService()
+
+
+def get_auth_service() -> AuthService:
+    return auth_service_instance
+
+
 # アクセストークン生成
 async def create_tokens(user_id: int, db: AsyncSession, response: Response):
     # ユニークなキーを生成
