@@ -1,7 +1,7 @@
 from typing import Optional
 from fastapi import Request, HTTPException, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from services.auth import AuthService, get_auth_service
+import services.auth as auth_service
 
 
 class JWTAuthMiddleware(HTTPBearer):
@@ -11,11 +11,11 @@ class JWTAuthMiddleware(HTTPBearer):
     async def __call__(
         self,
         request: Request,
-        auth_service: AuthService = Depends(get_auth_service),
+        auth_service: auth_service.AuthService = Depends(auth_service.get_auth_service),
     ) -> Optional[HTTPAuthorizationCredentials]:
         try:
             # Cookieからトークンを取得
-            access_token = request.cookies.get("access_token")
+            access_token = auth_service.get_token_from_cookie()
             # refresh_token = request.cookies.get("refresh_token")
 
             # if not access_token and not refresh_token:

@@ -18,9 +18,9 @@ class User(Base):
     username = Column(String(50), nullable=False)
     # ハッシュ化パスワード：未入力不可
     hashed_password = Column(String(255), nullable=False)
-    # アクセストークン
+    # アクセストークンとのリレーション
     access_tokens = relationship("UserAccessToken", back_populates="user")
-    # リフレッシュトークン
+    # リフレッシュトークンとのリレーション
     refresh_tokens = relationship("UserRefreshToken", back_populates="user")
 
 

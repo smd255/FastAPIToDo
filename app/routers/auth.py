@@ -45,6 +45,7 @@ async def login(
     try:
         # ユーザー, パスワード認証
         user = await auth_crud.verify_user(db, data)
+        # ユーザー認証成功した場合
         # JWTトークンの生成とクッキーへの設定
         await auth_service.create_tokens(user.id, db, response=response)
         return ResponseSchema(message="ログイン成功しました")
@@ -59,12 +60,11 @@ async def user_refresh_token(
     response: Response,
     db: AsyncSession = Depends(db.get_dbsession),
     access_token: str = Depends(auth_service.get_token_from_cookie),
-    refresh_token: str = Depends(auth_service.get_refresh_token_from_cookie),
+    refresh_token: str = Depends(),
 ) -> bool:
-    rt_token_payload = auth_service.get_token_payload(
-        refresh_token, security.SECRET_KEY
-    )
-
+    # rt_token_payload = auth_service.get_token_payload(
+    #     refresh_token, security.SECRET_KEY
+    # )
     if not rt_token_payload:
         return ResponseSchema(message="エラー。リフレッシュトークンがありません")
 

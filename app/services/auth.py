@@ -25,6 +25,9 @@ class AuthService:
         self.secret_key = secret_key
         self.algorithm = algorithm
 
+    # ================================
+    # 公開メソッド
+    # ================================
     # トークンの検証
     async def validate_token(self, token: str) -> bool:
         try:
@@ -83,85 +86,6 @@ def get_auth_service() -> AuthService:
     return auth_service_instance
 
 
-# アクセストークン生成
-async def create_tokens(user_id: int, db: AsyncSession, response: Response):
-    # ユニークなキーを生成
-    access_key = unique_string(50)
-    refresh_key = unique_string(100)
-
-    # トークンの有効期限を設定
-    now = datetime.datetime.now(datetime.timezone.utc)  # 現在の時刻
-    at_expires = _generate_expires(
-        now=now, minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES
-    )
-    rt_expires = _generate_expires(
-        now=now, minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES
-    )
-
-    # アクセストークン保存
-    at_token = await auth_crud.create_access_token(
-        db_session=db,
-        token=auth_schema.AccessTokenSchema(
-            user_id=user_id, access_key=access_key, expires_at=at_expires
-        ),
-    )
-
-    # リフレッシュトークン保存
-    rt_token = await auth_crud.create_reflesh_token(
-        db_session=db,
-        token=auth_schema.RefleshTokenSchema(
-            user_id=user_id, access_key=refresh_key, expires_at=rt_expires
-        ),
-    )
-
-    # ここでユーザー情報にアクセストークン, リフレッシュトークンを保存する？
-
-    # アクセストークンのペイロードを作成
-    at_payload = {
-        "sub": str(user_id),
-        "jti": str(at_token.id),
-        "type": "access",
-        "exp": int((datetime.utcnow(timezone.utc) + at_expires).timestamp()),
-        "iat": int(now.timestamp()),
-    }
-
-    # # リフレッシュトークンのペイロードを作成
-    # rt_payload = {
-    #     "sub": str(user_id),
-    #     "jti": str(rt_token.id),
-    #     "type": "refresh",
-    #     "exp": int((now + rt_expires).timestamp()),
-    #     "iat": int(now.timestamp()),
-    # }
-
-    # JWTを生成
-    at_jwt = _generate_token(at_payload, settings.JWT_SECRET)
-    rt_jwt = _generate_token(rt_payload, settings.JWT_REFRESH_SECRET)
-
-    # クッキーにアクセストークンを設定
-    response.set_cookie(
-        key="access_token",
-        value=f"Bearer {at_jwt}",
-        httponly=True,
-        secure=True,  # HTTPS環境では True に設定
-        samesite="lax",  # 要件に応じて "strict" に変更可能
-        max_age=int(at_expires.total_seconds()),
-        expires=int((now + at_expires).timestamp()),
-    )
-
-    # リフレッシュトークンはDBにのみ保存？
-    # クッキーにリフレッシュトークンを設定
-    # response.set_cookie(
-    #     key="refresh_token",
-    #     value=rt_jwt,
-    #     httponly=True,
-    #     secure=True,  # HTTPS環境では True に設定
-    #     samesite="lax",  # 要件に応じて "strict" に変更可能
-    #     max_age=int(rt_expires.total_seconds()),
-    #     expires=int((now + rt_expires).timestamp()),
-    # )
-
-
 # アクセストークンの取得
 async def get_token_from_cookie(
     access_token: Optional[str] = Cookie(None, alias="access_token")
@@ -187,34 +111,6 @@ async def get_token_from_cookie(
         access_token = access_token[7:]
 
     return access_token
-
-
-# リフレッシュトークンはDBに保存？
-# リフレッシュトークンの取得
-# async def get_refresh_token_from_cookie(
-#     refresh_token: Optional[str] = Cookie(None, alias="refresh_token")
-# ) -> str:
-#     """
-#     クッキーからリフレッシュトークンを取得します。
-
-#     Args:
-#         refresh_token (Optional[str]): クッキーに格納されているリフレッシュトークン。
-#             デフォルトは None。エイリアス "refresh_token" を使用してクッキーにアクセスします。
-
-#     Return:
-#         str: "Bearer " プレフィックスを削除したリフレッシュトークン。
-
-#     Raises:
-#         HTTPException: リフレッシュトークンが見つからない場合、または無効な場合に発生します。
-#     """
-#     if not refresh_token:
-#         raise HTTPException(status_code=401, detail="Not authenticated")
-
-#     # トークンに "Bearer " プレフィックスがある場合は削除
-#     if refresh_token.startswith("Bearer "):
-#         refresh_token = refresh_token[7:]
-
-#     return refresh_token
 
 
 # ペイロードの取得

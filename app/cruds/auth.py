@@ -137,6 +137,15 @@ async def get_actoken_by_id(
     return token
 
 
+アクセストークンをユーザーIDから取得する関数
+
+
+async def get_actoken_by_userid(
+    db_session: AsyncSession, at_id: int
+) -> auth_model.UserAccessToken | None:
+    pass
+
+
 # リフレッシュトークン1件取得
 async def get_retoken_by_id(
     db_session: AsyncSession, rt_id: int
@@ -160,6 +169,11 @@ async def get_retoken_by_id(
     print(">>> データ取得完了")
     return token
 
+
+リフレッシュトークンをユーザーIDから取得する関数
+async def get_retoken_by_userid(
+    db_session: AsyncSession, rt_id: int
+) -> auth_model.UserRefreshToken | None:
 
 # アクセストークンの無効化
 async def invalidate_actoken(
