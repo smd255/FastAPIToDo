@@ -1,6 +1,9 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from db import Base
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+
 from datetime import datetime
+
+from db import Base
 
 
 # ============================================
@@ -20,8 +23,13 @@ class Memo(Base):
     is_check = Column(Boolean, default=False)
     # ユーザーID：未入力不可
     # TODO:ユーザーID取得未実装のため、暫定でNull許容
-    user_id = Column(Integer, nullable=True)
+    user_id = Column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
     # 作成日時
     created_at = Column(DateTime, default=datetime.now())
     # 更新日時
     updated_at = Column(DateTime)
+
+    # リレーション
+    user = relationship("User", back_populates="memos")
