@@ -2,8 +2,8 @@ import { displayMessage } from '../util.js'; //メッセー表示関数
 
 // グローバルスコープでFastAPIのURLを定義
 // TODO:URLは要検討
-const apiUrlAuth = 'http://localhost:8000/auth/'; //ログイン画面
-const registerUrl = 'http://localhost:8000/auth/register'; //登録用URL
+const loginUrl = 'http://localhost:8000/auth/login'; //ログイン画面
+const sigunupUrl = 'http://localhost:8000/auth/signup'; //登録用URL
 
 document.addEventListener('DOMContentLoaded', function () {
     const formTitle = document.getElementById('form-title'); // フォームタイトル
@@ -45,9 +45,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // 送信関数実行
         if (isRegister) {
             //新規登録関数実行
-            registerUser(user);
+            signUp(user);
         } else {
-            // TODO:ログイン関数実行
+            // ログイン関数実行
+            login(user);
         }
     };
 });
@@ -66,11 +67,44 @@ function resetForm() {
 /**
  * 新規登録：非同期関数
  */
-async function registerUser(user) {
+async function signUp(user) {
     try {
         // APIにPOSTリクエスト送信
         // JSON形式
-        const response = await fetch(registerUrl, {
+        const response = await fetch(sigunupUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(user),
+        });
+        // レスポンスのボディをJSONとして解析
+        const data = await response.json();
+        // レスポンスが成功した場合(HTTPステータスコード：200)
+        if (response.ok) {
+            // 成功メッセージをアラートで表示
+            displayMessage(data.message);
+            // TODO:メインページへの遷移？
+        } else {
+            // エラーメッセージ表示
+            // TODO:場合分けでエラーメッセージ切り替え
+            displayMessage(data.detail);
+            // フォームをリセットして新規入力状態に戻す
+            // TODO: ユーザー名, パスワードのどちらの間違いかによってリセットする対象を変える
+            resetForm();
+        }
+    } catch (error) {
+        // ネットワークエラーやその他の理由でリクエスト自体が失敗した場合
+        console.error('ユーザー登録中にエラーが発生しました：', error);
+    }
+}
+
+/**
+ *　ログイン：非同期関数
+ */
+async function login(user) {
+    try {
+        // APIにPOSTリクエスト送信
+        // JSON形式
+        const response = await fetch(loginUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(user),

@@ -9,39 +9,45 @@ import models.memo as memo_model
 # =============================================
 # 新規登録
 async def insert_memo(
-    db_session: AsyncSession, memo_data: memo_schema.InsertAndUpdateMemoSchema
+    db_session: AsyncSession,
+    memo_data: memo_schema.InsertAndUpdateMemoSchema,
+    user_id: int,
 ) -> memo_model.Memo:
-    """
-    新しいデータをデータベースに登録する関数
-    Args:
-        db_session (AsyncSession): 非同期DBセッション
-        memo_data(InsertAndUpdateMemoSchema): 作成するメモのデータ
-    Return:
-        Memo: 作成されたメモのモデル
-    """
     print("=== 新規登録：開始 ===")
-    new_memo = memo_model.Memo(**memo_data.model_dump())  # model_dump()辞書形式に変換
-    db_session.add(new_memo)  # 新しいメモを登録
-    await db_session.commit()  # コミット
+    # user_idを含む形でMemoモデルを作成
+    memo_data_dict = memo_data.model_dump()
+    memo_data_dict["user_id"] = user_id
+    new_memo = memo_model.Memo(**memo_data_dict.model_dump())
+    # DBに登録
+    db_session.add(new_memo)
+    await db_session.commit()
     await db_session.refresh(new_memo)  # DBの内容を変数に反映(DBの情報と同期)
     print(">>> データ追加完了")
     return new_memo
 
 
 # 全件取得
-async def get_memos(db_session: AsyncSession) -> list[memo_model.Memo]:
-    """
-    データベースから全てのメモを取得する関数
-    Args:
-        db_session(AsyncSession): 非同期セッション
-    Returns:
-        list[Memo]: 取得された全てのメモのリスト
-    """
-    print("=== 全件取得：開始 ===")
-    result = await db_session.execute(select(memo_model.Memo))  # 全メモ選択
-    memos = result.scalars().all()  # 全結果をリストとして格納
-    print(">>> データ全件取得完了")
-    return memos
+# async def get_memos(db_session: AsyncSession) -> list[memo_model.Memo]:
+#     """
+#     データベースから全てのメモを取得する関数
+#     Args:
+#         db_session(AsyncSession): 非同期セッション
+#     Returns:
+#         list[Memo]: 取得された全てのメモのリスト
+#     """
+#     print("=== 全件取得：開始 ===")
+#     result = await db_session.execute(select(memo_model.Memo))  # 全メモ選択
+#     memos = result.scalars().all()  # 全結果をリストとして格納
+#     print(">>> データ全件取得完了")
+#     return memos
+
+
+# ユーザー単位で全件取得
+async def get_memos_by_user_id(db: AsyncSession, user_id: int):
+    result = await db.execute(
+        select(memo_model.Memo).where(memo_model.Memo.user_id == user_id)
+    )
+    return result.scalars().all()
 
 
 # 1件取得

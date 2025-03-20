@@ -22,7 +22,6 @@ class Memo(Base):
     # チェック状況：True:チェック有り, False：チェック無し
     is_check = Column(Boolean, default=False)
     # ユーザーID：未入力不可
-    # TODO:ユーザーID取得未実装のため、暫定でNull許容
     user_id = Column(
         Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )

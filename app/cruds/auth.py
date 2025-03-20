@@ -1,11 +1,11 @@
 import base64
 import hashlib
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import jwt
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ from config import get_settings
 ALGORITHM = "HS256"
 SECRET_KEY = get_settings().secret_key
 
-oauth2_schema = OAuth2PasswordBearer(tokenUrl="/auth/login")
+# oauth2_schema = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 # ユーザー登録
@@ -63,14 +63,45 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
-# 現在のユーザー取得
-def get_current_user(token: Annotated[str, Depends(oauth2_schema)]):
+# Cookieから現在のユーザーを取得
+def get_current_user_from_cookie(request: Request) -> DecodedTokenSchema:
+    # Cookieからトークンを取得
+    token = request.cookies.get("access_token")
+    if not token:
+        raise HTTPException(
+            status_code=401, detail="Authentication credentials missing"
+        )
+
     try:
+        # トークンをデコードしてペイロードを取得
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        user_id = payload.get("id")
-        if username is None or user_id is None:
-            return None
-        return DecodedTokenSchema(username=username, user_id=user_id)
+        exp = payload.get("exp")
+        if exp and datetime.fromtimestamp(exp, timezone.utc) < datetime.now(
+            timezone.utc
+        ):
+            raise HTTPException(status_code=401, detail="Token has expired")
+
+        # ユーザー情報を返す
+        return DecodedTokenSchema(
+            user_id=payload.get("id"), username=payload.get("sub")
+        )
     except jwt.JWTError:
-        raise jwt.JWTError
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
+# 現在のユーザー取得
+# ログイン済みのユーザーが受け取ったアクセストークンから取得
+# def get_current_user(token: Annotated[str, Depends(oauth2_schema)]):
+#     try:
+#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+#         username = payload.get("sub")
+#         user_id = payload.get("id")
+#         if username is None or user_id is None:
+#             raise HTTPException(status_code=401, detail="Invalid token")
+#         return DecodedTokenSchema(username=username, user_id=user_id)
+#     except jwt.ExpiredSignatureError:  # 有効期限切れ
+#         raise HTTPException(
+#             status_code=401, detail="Token has expired. Please log in again."
+#         )
+#     except jwt.JWTError:  # その他のエラー
+#         raise HTTPException(status_code=401, detail="Invalid token")
