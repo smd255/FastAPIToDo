@@ -40,9 +40,12 @@ async def create_memo(
 
 # ユーザー単位でメモ情報全件取得のエンドポイント
 @router.get("/{user_id}", response_model=list[MemoSchema])
-async def get_memos_list(user_id: int, db: AsyncSession = Depends(db.get_dbsession)):
-    # 指定されたuser_idと一致するメモをデータベースから取得
-    memos = await memo_crud.get_memos_by_user_id(db, user_id)
+async def get_memos_list(
+    db: AsyncSession = Depends(db.get_dbsession),
+    user: DecodedTokenSchema = Depends(auth_crud.get_current_user_from_cookie),
+):
+    # Cookieのuser_id(ログイン中のuser_id)のmemo取得
+    memos = await memo_crud.get_memos_by_user_id(db, user.user_id)
     return memos
 
 
@@ -55,9 +58,16 @@ async def get_memo_detail(
 ):
     # 指定されたIDのメモをデータベースから取得
     memo = await memo_crud.get_memo_by_id(db, memo_id)
+
     if not memo:
         # メモが見つからない場合、HTTP 404エラーを返す
         raise HTTPException(status_code=404, detail="メモが見つかりません")
+
+    if memo.user_id != user.user_id:
+        # ログイン中のユーザーidと取得したメモのユーザーidが異なる場合、HTTP 404エラーを返す
+        raise HTTPException(
+            status_code=404, detail="該当ユーザーのメモが見つかりません"
+        )
     return memo
 
 
@@ -70,6 +80,14 @@ async def modify_memo(
     db: AsyncSession = Depends(db.get_dbsession),
     user=Depends(auth_crud.get_current_user_from_cookie),
 ):
+    # ユーザーIDチェック
+    memo = await memo_crud.get_memo_by_id(db, memo_id)
+    if memo.user_id != user.user_id:
+        # ログイン中のユーザーidと取得したメモのユーザーidが異なる場合、HTTP 404エラーを返す
+        raise HTTPException(
+            status_code=404, detail="該当ユーザーのメモが見つかりません"
+        )
+
     # 指定されたIDのメモを新しいデータで更新
     update_memo = await memo_crud.update_memo(db, memo_id, memo)
     if not update_memo:
@@ -80,7 +98,19 @@ async def modify_memo(
 
 # 特定のメモを削除するエンドポイント
 @router.delete("/{user_id}/{memo_id}", response_model=ResponseSchema)
-async def remove_memo(memo_id: int, db: AsyncSession = Depends(db.get_dbsession)):
+async def remove_memo(
+    memo_id: int,
+    db: AsyncSession = Depends(db.get_dbsession),
+    user=Depends(auth_crud.get_current_user_from_cookie),
+):
+    # ユーザーIDチェック
+    memo = await memo_crud.get_memo_by_id(db, memo_id)
+    if memo.user_id != user.user_id:
+        # ログイン中のユーザーidと取得したメモのユーザーidが異なる場合、HTTP 404エラーを返す
+        raise HTTPException(
+            status_code=404, detail="該当ユーザーのメモが見つかりません"
+        )
+
     # 指定されたIDのメモをデータベースから削除
     result = await memo_crud.delete_memo(db, memo_id)
     if not result:
