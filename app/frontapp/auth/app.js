@@ -100,32 +100,82 @@ async function signUp(user) {
 /**
  *　ログイン：非同期関数
  */
-async function login(user) {
-    try {
-        // APIにPOSTリクエスト送信
-        // JSON形式
-        const response = await fetch(loginUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(user),
-        });
-        // レスポンスのボディをJSONとして解析
+// async function login(user) {
+//     try {
+//         // APIにPOSTリクエスト送信
+//         // JSON形式
+//         const response = await fetch(loginUrl, {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify(user),
+//         });
+//         // レスポンスのボディをJSONとして解析
+//         const data = await response.json();
+//         // レスポンスが成功した場合(HTTPステータスコード：200)
+//         if (response.ok) {
+//             // 成功メッセージをアラートで表示
+//             displayMessage(data.message);
+//             // TODO:メインページへの遷移？
+//         } else {
+//             // エラーメッセージ表示
+//             // TODO:場合分けでエラーメッセージ切り替え
+//             displayMessage(data.detail);
+//             // フォームをリセットして新規入力状態に戻す
+//             // TODO: ユーザー名, パスワードのどちらの間違いかによってリセットする対象を変える
+//             resetForm();
+//         }
+//     } catch (error) {
+//         // ネットワークエラーやその他の理由でリクエスト自体が失敗した場合
+//         console.error('ユーザー登録中にエラーが発生しました：', error);
+//     }
+// }
+
+/**
+ * 仮：Authorizationヘッダー認証方式
+ */
+/**
+ * ログイン処理
+ */
+async function login(username, password) {
+    // リクエスト送信
+    const response = await fetch(loginUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({ username, password }),
+    });
+
+    // レスポンスデータ(JSON)取得
+    if (response.ok) {
         const data = await response.json();
-        // レスポンスが成功した場合(HTTPステータスコード：200)
-        if (response.ok) {
-            // 成功メッセージをアラートで表示
-            displayMessage(data.message);
-            // TODO:メインページへの遷移？
-        } else {
-            // エラーメッセージ表示
-            // TODO:場合分けでエラーメッセージ切り替え
-            displayMessage(data.detail);
-            // フォームをリセットして新規入力状態に戻す
-            // TODO: ユーザー名, パスワードのどちらの間違いかによってリセットする対象を変える
-            resetForm();
-        }
-    } catch (error) {
-        // ネットワークエラーやその他の理由でリクエスト自体が失敗した場合
-        console.error('ユーザー登録中にエラーが発生しました：', error);
+        const token = data.access_token;
+
+        // Authorizationヘッダーに保存する仕組み(ローカルストレージ)
+        localStorage.setItem('access_token', token);
+    } else {
+        console.error('Login failed!');
+    }
+}
+
+/**
+ * トークン認証
+ * 認証必要ページ用に提供
+ */
+export async function fetchProtectedData(url) {
+    const token = localStorage.getItem('access_token');
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+    } else {
+        console.error('Failed to fetch protected data.');
     }
 }

@@ -1,4 +1,4 @@
-import { displayMessage } from '../util.js'; //メッセー表示関数
+import { displayMessage } from '../util.js'; //メッセージ表示関数
 
 // グローバルスコープでFastAPIのURLを定義
 const apiUrl = 'http://localhost:8000/memos/';
@@ -32,17 +32,36 @@ function resetForm() {
     editingMemoId = null;
 }
 
+// トークン取得
+function getToken() {
+    // ローカルストレージからトークンを取得
+    const token = localStorage.getItem('access_token');
+
+    // トークンが存在しない場合のエラー処理
+    if (!token) {
+        throw new Error('認証トークンがありません。ログインしてください。');
+    }
+    return token;
+}
+
 /**
  * 新規登録：非同期関数
  */
 async function createMemo(memo) {
     try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「POSTリクエスト」を送信してメモを作成。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
         const response = await fetch(`${apiUrl}${currentUserId}`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, // Authorizationヘッダーを追加
+            },
+
             // メモオブジェクトをJSON文字列に変換して送信
             body: JSON.stringify(memo),
         });
@@ -76,6 +95,9 @@ async function createMemo(memo) {
  */
 async function updateMemo(memo) {
     try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「POSTリクエスト」を送信してメモを更新。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
@@ -83,7 +105,10 @@ async function updateMemo(memo) {
             `${apiUrl}${currentUserId}/${editingMemoId}`,
             {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify(memo),
             }
         );
@@ -117,8 +142,14 @@ async function updateMemo(memo) {
  */
 async function deleteMemo(memoId) {
     try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「DELETEリクエスト」を送信してメモを削除します。
         const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
             method: 'DELETE',
         });
         // レスポンスのボディをJSONとして解析
@@ -145,8 +176,15 @@ async function deleteMemo(memoId) {
  */
 async function fetchAndDisplayMemos() {
     try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「GETリクエスト」を送信してメモ一覧を取得。
-        const response = await fetch(`${apiUrl}${currentUserId}`);
+        const response = await fetch(`${apiUrl}${currentUserId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         // レスポンスが失敗した場合、エラーを投げる。
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -186,8 +224,14 @@ async function fetchAndDisplayMemos() {
 async function editMemo(memoId) {
     // 編集するメモのIDをグローバル変数に設定
     editingMemoId = memoId;
+    // トークン取得
+    const token = getToken();
     // サーバーから特定のIDのメモのデータを取得するリクエストを送信
-    const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`);
+    const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     // レスポンスのJSONを解析し、メモデータを取得
     const memo = await response.json();
     // レスポンスが正常でなければ、エラーメッセージを表示し、処理を終了
@@ -223,8 +267,14 @@ function getCheckboxState(memoId) {
  * 特定のメモのチェックボックスの状態更新用非同期関数
  */
 async function updateCheckBox(memoId, isChecked) {
+    // トークン取得
+    const token = getToken();
     // サーバーから特定のIDのメモのデータを取得するリクエストを送信
-    const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`);
+    const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     // レスポンスのJSONを解析し、メモデータを取得
     const memo = await response.json();
     // レスポンスが正常でなければ、エラーメッセージを表示し、処理を終了
@@ -240,7 +290,10 @@ async function updateCheckBox(memoId, isChecked) {
         // JSON形式のデータを送信
         const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify(memo),
         });
     } catch (error) {
@@ -251,7 +304,12 @@ async function updateCheckBox(memoId, isChecked) {
 
 // ログイン中のユーザー情報の取得
 function initializeUserId() {
+    // トークン取得
+    const token = getToken();
     fetch(getuserUrl, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
         method: 'GET',
         credentials: 'include', // クッキーを含める
     })

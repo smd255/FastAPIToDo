@@ -1,5 +1,3 @@
-from typing import Annotated
-
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,10 +10,6 @@ import db
 # ルーターを作成し、タグとURLパスのプレフィックスを認定
 router = APIRouter(tags=["Memos"], prefix="/memos")
 
-# 依存性注入
-# DbDependency = Annotated[AsyncSession, Depends(db.get_dbsession)]
-# UserDependency = Annotated[DecodedTokenSchema, Depends(auth_crud.get_current_user_from_cookie)]
-
 
 # ============================================
 # メモ用のエンドポイント
@@ -25,7 +19,7 @@ router = APIRouter(tags=["Memos"], prefix="/memos")
 async def create_memo(
     memo: InsertAndUpdateMemoSchema,
     db: AsyncSession = Depends(db.get_dbsession),
-    user: DecodedTokenSchema = Depends(auth_crud.get_current_user_from_cookie),
+    user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
 ):
     try:
         # 現在のユーザーIDを取得
@@ -42,7 +36,7 @@ async def create_memo(
 @router.get("/{user_id}", response_model=list[MemoSchema])
 async def get_memos_list(
     db: AsyncSession = Depends(db.get_dbsession),
-    user: DecodedTokenSchema = Depends(auth_crud.get_current_user_from_cookie),
+    user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
 ):
     # Cookieのuser_id(ログイン中のuser_id)のmemo取得
     memos = await memo_crud.get_memos_by_user_id(db, user.user_id)
@@ -54,7 +48,7 @@ async def get_memos_list(
 async def get_memo_detail(
     memo_id: int,
     db: AsyncSession = Depends(db.get_dbsession),
-    user=Depends(auth_crud.get_current_user_from_cookie),
+    user=Depends(auth_crud.get_jwt_token),
 ):
     # 指定されたIDのメモをデータベースから取得
     memo = await memo_crud.get_memo_by_id(db, memo_id)
@@ -78,7 +72,7 @@ async def modify_memo(
     memo_id: int,
     memo: InsertAndUpdateMemoSchema,
     db: AsyncSession = Depends(db.get_dbsession),
-    user=Depends(auth_crud.get_current_user_from_cookie),
+    user=Depends(auth_crud.get_jwt_token),
 ):
     # ユーザーIDチェック
     memo = await memo_crud.get_memo_by_id(db, memo_id)
@@ -101,7 +95,7 @@ async def modify_memo(
 async def remove_memo(
     memo_id: int,
     db: AsyncSession = Depends(db.get_dbsession),
-    user=Depends(auth_crud.get_current_user_from_cookie),
+    user=Depends(auth_crud.get_jwt_token),
 ):
     # ユーザーIDチェック
     memo = await memo_crud.get_memo_by_id(db, memo_id)
