@@ -4,7 +4,6 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from routers.memo import router as memo_router
 from routers.auth import router as auth_router
-from middleware import JWTAuthMiddleware
 
 # ===========================================
 # 起動ファイル
@@ -24,8 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# JWT認証ミドルウェアの追加
-app.add_middleware(JWTAuthMiddleware)
 
 # ルーターのマウント
 app.include_router(memo_router)  # メインページ

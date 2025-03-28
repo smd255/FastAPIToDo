@@ -8,7 +8,7 @@ from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.auth import UserCreateSchema
+from schemas.auth import UserCreateSchema, TokenSchema
 from models.auth import User
 from config import get_settings
 
@@ -20,7 +20,10 @@ oauth2_schema = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
 # ユーザー登録
-def create_user(db: AsyncSession, user_create: UserCreateSchema) -> User | None:
+async def create_user(
+    db_session: AsyncSession, user_create: UserCreateSchema
+) -> User | None:
+    print("=== ユーザー新規登録：開始 ===")
     # ソルトの生成
     salt = base64.b64encode(os.urandom(32))
     # パスワードハッシュ化
@@ -28,20 +31,25 @@ def create_user(db: AsyncSession, user_create: UserCreateSchema) -> User | None:
         "sha256", user_create.password.encode(), salt, 1000
     ).hex()
 
+    # TODO: 既存ユーザー名の重複チェック
+
     # ユーザ情報生成
     new_user = User(
         username=user_create.username, password=hashed_password, salt=salt.decode()
     )
-    db.add(new_user)
-    db.commit()
-
+    db_session.add(new_user)
+    await db_session.commit()
+    await db_session.refresh(new_user)  # DBの内容を変数に反映(DBの情報と同期)
+    print(">>> ユーザー追加完了")
     return new_user
 
 
 # ユーザー認証
-def authenticate_user(db: AsyncSession, username: str, password: str) -> User | None:
+async def authenticate_user(
+    db_session: AsyncSession, username: str, password: str
+) -> User | None:
     # ユーザー名から選択
-    user = db.query(User).filter(User.username == username).first()
+    user = await get_user_byname(db_session=db_session, username=username)
     if not user:
         return None
 
@@ -55,6 +63,15 @@ def authenticate_user(db: AsyncSession, username: str, password: str) -> User | 
     return user
 
 
+# ユーザー取得(ユーザー名)
+async def get_user_byname(db_session: AsyncSession, username: str) -> User | None:
+    user = db_session.query(User).filter(User.username == username).first()
+    if not user:
+        return None
+
+    return user
+
+
 # アクセストークン生成
 def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     expires = datetime.now() + expires_delta
@@ -63,7 +80,7 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
 
 
 # アクセストークン取得
-def get_jwt_token(token: str = Depends(oauth2_schema)) -> str:
+def get_jwt_token(token: str = Depends(oauth2_schema)) -> TokenSchema:
     if not token:
         raise HTTPException(status_code=401, detail="Token not provided")
     return token

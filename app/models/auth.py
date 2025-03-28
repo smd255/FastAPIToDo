@@ -16,7 +16,7 @@ class User(Base):
     # ユーザー名：未入力不可
     username = Column(String(50), nullable=False)
     # ハッシュ化パスワード：未入力不可
-    hashed_password = Column(String(255), nullable=False)
+    password = Column(String(255), nullable=False)
     # ソルト
     salt = Column(String, nullable=False)
     # 生成日

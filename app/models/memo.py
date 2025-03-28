@@ -23,7 +23,7 @@ class Memo(Base):
     is_check = Column(Boolean, default=False)
     # ユーザーID：未入力不可
     user_id = Column(
-        Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+        Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False
     )
     # 作成日時
     created_at = Column(DateTime, default=datetime.now())

@@ -1,7 +1,5 @@
 from datetime import timedelta
 
-from starlette.status import HTTP_401_UNAUTHORIZED
-
 from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
@@ -13,8 +11,8 @@ from schemas.auth import (
     UserResponseSchema,
     UserCreateSchema,
     TokenSchema,
-    DecodedTokenSchema,
 )
+from models.auth import User
 import db
 
 # ルーターを作成し、タグとURLパスのプレフィックスを認定
@@ -36,9 +34,16 @@ router = APIRouter(tags=["Auth"], prefix="/auth")
 )
 async def create_user(
     user_create: UserCreateSchema,
-    db: AsyncSession = Depends(db.get_dbsession),
+    db_session: AsyncSession = Depends(db.get_dbsession),
 ):
-    return auth_crud.create_user(db, user_create)
+    new_user: User = await auth_crud.create_user(db_session, user_create)
+
+    return UserResponseSchema(
+        id=new_user.user_id,
+        username=new_user.username,
+        created_at=new_user.created_at,
+        updated_at=new_user.updated_at,
+    )
 
 
 # ログインのエンドポイント
@@ -46,10 +51,12 @@ async def create_user(
 # TODO:トークン保存期間が直値
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=TokenSchema)
 async def login(
-    db: AsyncSession = Depends(db.get_dbsession),
-    form_data: OAuth2PasswordRequestForm = Depends,
+    db_session: AsyncSession = Depends(db.get_dbsession),
+    form_data: OAuth2PasswordRequestForm = Depends(),
 ):
-    user = auth_crud.authenticate_user(db, form_data.username, form_data.password)
+    user = auth_crud.authenticate_user(
+        db_session, form_data.username, form_data.password
+    )
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
@@ -58,15 +65,17 @@ async def login(
 
 
 # ログイン中のユーザーid取得
-@router.get("/me", response_model=DecodedTokenSchema)
-async def get_current_user_info(
-    current_user: DecodedTokenSchema = Depends(auth_crud.get_current_user),
-):
-    if not current_user:
-        raise HTTPException(
-            status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
-        )
-    return current_user
+# コールされていない、不要?
+# @router.get("/me", response_model=DecodedTokenSchema)
+# async def get_current_user_info(
+#     current_user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
+# ):
+#     if not current_user:
+#         raise HTTPException(
+#             status_code=HTTP_401_UNAUTHORIZED, detail="Could not validate credentials"
+#         )
+#     デコード後のschemaで良いのか？
+#     return current_user
 
 
 # ログインのエンドポイント
