@@ -54,13 +54,15 @@ async def login(
     db_session: AsyncSession = Depends(db.get_dbsession),
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
-    user = auth_crud.authenticate_user(
+    user = await auth_crud.authenticate_user(
         db_session, form_data.username, form_data.password
     )
     if not user:
         raise HTTPException(status_code=401, detail="Incorrect username or password")
 
-    token = auth_crud.create_access_token(user.username, user.id, timedelta(minutes=20))
+    token = auth_crud.create_access_token(
+        user.username, user.user_id, timedelta(minutes=20)
+    )
     return {"access_token": token, "token_type": "bearer"}
 
 

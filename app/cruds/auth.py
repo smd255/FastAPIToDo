@@ -6,6 +6,7 @@ import jwt
 
 from fastapi import HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from schemas.auth import UserCreateSchema, TokenSchema
@@ -65,10 +66,12 @@ async def authenticate_user(
 
 # ユーザー取得(ユーザー名)
 async def get_user_byname(db_session: AsyncSession, username: str) -> User | None:
-    user = db_session.query(User).filter(User.username == username).first()
+    result = await db_session.execute(select(User).where(User.username == username))
+    print("=== ユーザー取得：開始  ===")
+    user = result.scalars().first()
     if not user:
         return None
-
+    print(">>> ユーザー取得完了")
     return user
 
 
