@@ -17,7 +17,8 @@ async def insert_memo(
     # user_idを含む形でMemoモデルを作成
     memo_data_dict = memo_data.model_dump()
     memo_data_dict["user_id"] = user_id
-    new_memo = memo_model.Memo(**memo_data_dict.model_dump())
+    # new_memo = memo_model.Memo(**memo_data_dict.model_dump())
+    new_memo = memo_model.Memo(**memo_data_dict)
     # DBに登録
     db_session.add(new_memo)
     await db_session.commit()
@@ -88,11 +89,12 @@ async def update_memo(
         Memo | None: 更新されたメモのモデル、メモが存在しない場合はNoneを返す
     """
     print("=== データ更新：開始 ===")
-    memo = await get_memo_by_id(db_session, memo_id)  # 指定のメモ取得
+    memo: memo_model.Memo = await get_memo_by_id(db_session, memo_id)  # 指定のメモ取得
     if memo:
         memo.title = target_data.title
         memo.description = target_data.description
         memo.is_check = target_data.is_check
+        db_session.add(memo)
         await db_session.commit()
         await db_session.refresh(memo)
         print(">>> データ更新完了")

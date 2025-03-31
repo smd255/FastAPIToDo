@@ -9,7 +9,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.auth import UserCreateSchema, TokenSchema
+from schemas.auth import UserCreateSchema, DecodedTokenSchema
 from models.auth import User
 from config import get_settings
 
@@ -83,33 +83,13 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
 
 
 # アクセストークン取得
-def get_jwt_token(token: str = Depends(oauth2_schema)) -> TokenSchema:
-    if not token:
-        raise HTTPException(status_code=401, detail="Token not provided")
-    return token
-
-
-# Cookieから現在のユーザーを取得
-# def get_current_user_from_cookie(request: Request) -> DecodedTokenSchema:
-#     # Cookieからトークンを取得
-#     token = request.cookies.get("access_token")
-#     if not token:
-#         raise HTTPException(
-#             status_code=401, detail="Authentication credentials missing"
-#         )
-
-#     try:
-#         # トークンをデコードしてペイロードを取得
-#         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-#         exp = payload.get("exp")
-#         if exp and datetime.fromtimestamp(exp, timezone.utc) < datetime.now(
-#             timezone.utc
-#         ):
-#             raise HTTPException(status_code=401, detail="Token has expired")
-
-#         # ユーザー情報を返す
-#         return DecodedTokenSchema(
-#             user_id=payload.get("id"), username=payload.get("sub")
-#         )
-#     except jwt.JWTError:
-#         raise HTTPException(status_code=401, detail="Invalid token")
+def get_jwt_token(token: str = Depends(oauth2_schema)) -> DecodedTokenSchema:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        user_id = payload.get("id")
+        if username is None or user_id is None:
+            raise HTTPException(status_code=401, detail="無効なトークンです。")
+        return DecodedTokenSchema(username=username, user_id=user_id)
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="トークンの検証に失敗しました。")

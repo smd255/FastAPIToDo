@@ -15,7 +15,7 @@ router = APIRouter(tags=["Memos"], prefix="/memos")
 # メモ用のエンドポイント
 # ============================================
 # メモ新規登録のエンドポイント
-@router.post("/{user_id}", response_model=ResponseSchema)
+@router.post("/", response_model=ResponseSchema)
 async def create_memo(
     memo: InsertAndUpdateMemoSchema,
     db: AsyncSession = Depends(db.get_dbsession),
@@ -33,7 +33,7 @@ async def create_memo(
 
 
 # ユーザー単位でメモ情報全件取得のエンドポイント
-@router.get("/{user_id}", response_model=list[MemoSchema])
+@router.get("/", response_model=list[MemoSchema])
 async def get_memos_list(
     db: AsyncSession = Depends(db.get_dbsession),
     user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
@@ -44,11 +44,11 @@ async def get_memos_list(
 
 
 # 特定のメモ情報取得のエンドポイント
-@router.get("/{user_id}/{memo_id}", response_model=MemoSchema)
+@router.get("/{memo_id}", response_model=MemoSchema)
 async def get_memo_detail(
     memo_id: int,
     db: AsyncSession = Depends(db.get_dbsession),
-    user=Depends(auth_crud.get_jwt_token),
+    user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
 ):
     # 指定されたIDのメモをデータベースから取得
     memo = await memo_crud.get_memo_by_id(db, memo_id)
@@ -67,35 +67,35 @@ async def get_memo_detail(
 
 # ユーザー単位で設定
 # 特定のメモを更新するエンドポイント
-@router.put("/{user_id}/{memo_id}", response_model=ResponseSchema)
+@router.put("/{memo_id}", response_model=ResponseSchema)
 async def modify_memo(
     memo_id: int,
-    memo: InsertAndUpdateMemoSchema,
+    memo_target: InsertAndUpdateMemoSchema,
     db: AsyncSession = Depends(db.get_dbsession),
-    user=Depends(auth_crud.get_jwt_token),
+    user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
 ):
     # ユーザーIDチェック
-    memo = await memo_crud.get_memo_by_id(db, memo_id)
-    if memo.user_id != user.user_id:
+    memo_chk = await memo_crud.get_memo_by_id(db, memo_id)
+    if memo_chk.user_id != user.user_id:
         # ログイン中のユーザーidと取得したメモのユーザーidが異なる場合、HTTP 404エラーを返す
         raise HTTPException(
             status_code=404, detail="該当ユーザーのメモが見つかりません"
         )
 
     # 指定されたIDのメモを新しいデータで更新
-    update_memo = await memo_crud.update_memo(db, memo_id, memo)
-    if not update_memo:
+    updated_memo = await memo_crud.update_memo(db, memo_id, memo_target)
+    if not updated_memo:
         # 更新対象が見つからない場合、HTTP 404エラーを返す
         raise HTTPException(status_code=404, detail="更新対象が見つかりません")
     return ResponseSchema(message="メモが正常に更新されました")
 
 
 # 特定のメモを削除するエンドポイント
-@router.delete("/{user_id}/{memo_id}", response_model=ResponseSchema)
+@router.delete("/{memo_id}", response_model=ResponseSchema)
 async def remove_memo(
     memo_id: int,
     db: AsyncSession = Depends(db.get_dbsession),
-    user=Depends(auth_crud.get_jwt_token),
+    user: DecodedTokenSchema = Depends(auth_crud.get_jwt_token),
 ):
     # ユーザーIDチェック
     memo = await memo_crud.get_memo_by_id(db, memo_id)
