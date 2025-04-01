@@ -9,9 +9,6 @@ const getuserUrl = 'http://localhost:8000/auth/me';
 // 編集中のメモIDを保持する変数
 let editingMemoId = null;
 
-// ログイン中のユーザーIDを保持する変数
-let currentUserId = null;
-
 /**
  * フォームをリセットし新規登録モードに戻す関数
  */
@@ -55,7 +52,7 @@ async function createMemo(memo) {
         // APIに「POSTリクエスト」を送信してメモを作成。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
-        const response = await fetch(`${apiUrl}${currentUserId}`, {
+        const response = await fetch(`${apiUrl}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -101,17 +98,14 @@ async function updateMemo(memo) {
         // APIに「POSTリクエスト」を送信してメモを更新。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
-        const response = await fetch(
-            `${apiUrl}${currentUserId}/${editingMemoId}`,
-            {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(memo),
-            }
-        );
+        const response = await fetch(`${apiUrl}${editingMemoId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(memo),
+        });
         // レスポンスのボディをJSONとして解析
         const data = await response.json();
         // レスポンスが成功した場合(HTTPステータスコード：200)
@@ -146,11 +140,11 @@ async function deleteMemo(memoId) {
         const token = getToken();
 
         // APIに「DELETEリクエスト」を送信してメモを削除します。
-        const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+        const response = await fetch(`${apiUrl}${memoId}`, {
+            method: 'DELETE',
             headers: {
                 Authorization: `Bearer ${token}`,
             },
-            method: 'DELETE',
         });
         // レスポンスのボディをJSONとして解析
         const data = await response.json();
@@ -180,7 +174,8 @@ async function fetchAndDisplayMemos() {
         const token = getToken();
 
         // APIに「GETリクエスト」を送信してメモ一覧を取得。
-        const response = await fetch(`${apiUrl}${currentUserId}`, {
+        const response = await fetch(`${apiUrl}`, {
+            method: 'GET',
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -227,7 +222,8 @@ async function editMemo(memoId) {
     // トークン取得
     const token = getToken();
     // サーバーから特定のIDのメモのデータを取得するリクエストを送信
-    const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+    const response = await fetch(`${apiUrl}${memoId}`, {
+        method: 'GET',
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -270,7 +266,7 @@ async function updateCheckBox(memoId, isChecked) {
     // トークン取得
     const token = getToken();
     // サーバーから特定のIDのメモのデータを取得するリクエストを送信
-    const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+    const response = await fetch(`${apiUrl}${memoId}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -288,7 +284,7 @@ async function updateCheckBox(memoId, isChecked) {
         // APIに「POSTリクエスト」を送信してメモを更新。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
-        const response = await fetch(`${apiUrl}${currentUserId}/${memoId}`, {
+        const response = await fetch(`${apiUrl}${memoId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -303,32 +299,32 @@ async function updateCheckBox(memoId, isChecked) {
 }
 
 // ログイン中のユーザー情報の取得
-function initializeUserId() {
-    // トークン取得
-    const token = getToken();
-    fetch(getuserUrl, {
-        headers: {
-            Authorization: `Bearer ${token}`,
-        },
-        method: 'GET',
-        credentials: 'include', // クッキーを含める
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('ユーザー情報の取得に失敗しました');
-            }
-            // return response.json(); // ユーザー情報をJSON形式で取得
-            currentUserId = response.json().user_id;
-        })
-        .then((user) => {
-            console.log('ログイン中のユーザー:', user);
-            const userIdElement = document.getElementById('user-id');
-            userIdElement.textContent = `User ID: ${user.user_id}`; // 画面に表示
-        })
-        .catch((error) => {
-            console.error('エラー:', error);
-        });
-}
+// function initializeUserId() {
+//     // トークン取得
+//     const token = getToken();
+//     fetch(getuserUrl, {
+//         headers: {
+//             Authorization: `Bearer ${token}`,
+//         },
+//         method: 'GET',
+//         credentials: 'include', // クッキーを含める
+//     })
+//         .then((response) => {
+//             if (!response.ok) {
+//                 throw new Error('ユーザー情報の取得に失敗しました');
+//             }
+//             // return response.json(); // ユーザー情報をJSON形式で取得
+//             currentUserId = response.json().user_id;
+//         })
+//         .then((user) => {
+//             console.log('ログイン中のユーザー:', user);
+//             const userIdElement = document.getElementById('user-id');
+//             userIdElement.textContent = `User ID: ${user.user_id}`; // 画面に表示
+//         })
+//         .catch((error) => {
+//             console.error('エラー:', error);
+//         });
+// }
 
 // フォームのイベント設定関数
 function initializeFormEvents() {
@@ -382,8 +378,9 @@ function initializeTableClickEvents() {
  * ドキュメントの読み込みが完了時の処理
  */
 document.addEventListener('DOMContentLoaded', () => {
-    initializeUserId();
+    // initializeUserId();
     initializeFormEvents();
     initializeUpdateButtonEvent();
     initializeTableClickEvents();
+    fetchAndDisplayMemos();
 });
