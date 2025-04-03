@@ -1,4 +1,4 @@
-import { displayMessage } from '../util.js'; //メッセージ表示関数
+import { displayMessage } from '../util/util.js'; //メッセージ表示関数
 
 // グローバルスコープでFastAPIのURLを定義
 const apiUrl = 'http://localhost:8000/memos/';

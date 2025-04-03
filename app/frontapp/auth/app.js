@@ -1,4 +1,4 @@
-import { displayMessage } from '../util.js'; //メッセー表示関数
+import { displayMessage } from '../util/util.js'; //メッセー表示関数
 
 // グローバルスコープでFastAPIのURLを定義
 // TODO:URLは要検討
