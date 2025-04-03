@@ -1,0 +1,76 @@
+body {
+    /* 使用するフォントファミリー */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    /* 中央揃えにするためのマージン */
+    margin: 0 auto;
+    /* 全体のコンテンツの最大幅 */
+    max-width: 600px;
+    /* 全体のパディング */
+    padding: 20px;
+    /* 背景色 */
+    background-color: #f4f4f4;
+}
+
+.container {
+    /* 背景色 */
+    background-color: #ffffff;
+    /* 境界線 */
+    border: 1px solid #dddddd;
+    /* 下マージン */
+    margin-bottom: 20px;
+    /* 内部パディング */
+    padding: 20px;
+    /* 影 */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    /* 角の丸み */
+    border-radius: 5px;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%; /* ボタンと同じ幅にする */
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* padding や border を含めても width を維持 */
+}
+
+button {
+    width: 100%; /* ボタンの幅も統一 */
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.toggle-text {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.toggle-text a {
+    color: #007BFF;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.toggle-text a:hover {
+    text-decoration: underline;
+}

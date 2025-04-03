@@ -9,8 +9,10 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- アプリケーションのタイトル -->
-    <h1>Memo App</h1>
+    <!-- ヘッダーを挿入するための要素 -->
+    <header>
+        <div id="header"></div>
+    </header>
     <!-- メモ作成フォームのコンテナ -->
     <div class="form-container">
         <h2 id="formTitle">メモの作成</h2>
@@ -50,6 +52,13 @@
         </tbody>
      </table>
      <!-- JavaScriptファイルのリンク -->
-     <script src="app.js"></script> 
+     <script type="module" src="app.js"></script>
+     <script>
+        fetch("../base/base.html")
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("header").innerHTML = data;
+            });
+    </script> 
 </body>
 </html>

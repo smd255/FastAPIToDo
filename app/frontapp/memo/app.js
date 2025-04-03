@@ -1,23 +1,20 @@
+import { displayMessage } from '../util/util.js'; //メッセージ表示関数
+
 // グローバルスコープでFastAPIのURLを定義
 const apiUrl = 'http://localhost:8000/memos/';
+
+// ユーザーid取得用のurl
+const getuserUrl = 'http://localhost:8000/auth/me';
 
 // 編集中のメモIDを保持する変数
 let editingMemoId = null;
 
 /**
- * メッセージをアラートダイアログで表示する関数
- */
-function displayMessage(message){
-    alert(message);
-}
-
-/**
  * フォームをリセットし新規登録モードに戻す関数
  */
-
-function resetForm(){
+function resetForm() {
     // フォームのタイトルをリセット
-    document.getElementById('formTitle').textContent = "メモの作成";
+    document.getElementById('formTitle').textContent = 'メモの作成';
     // 項目：タイトルをリセット
     document.getElementById('title').value = '';
     // 項目：詳細をリセット
@@ -25,30 +22,50 @@ function resetForm(){
     // 更新実行ボタンを非表示にする
     document.getElementById('updateButton').style.display = 'none';
     // 新規登録ボタンを再表示
-    document.querySelector('#createMemoForm button[type="submit"]').style.display = 'block';
+    document.querySelector(
+        '#createMemoForm button[type="submit"]'
+    ).style.display = 'block';
     // 編集中のメモIDをリセット
-    editingMemoId =null;
+    editingMemoId = null;
 }
 
+// トークン取得
+function getToken() {
+    // ローカルストレージからトークンを取得
+    const token = localStorage.getItem('access_token');
+
+    // トークンが存在しない場合のエラー処理
+    if (!token) {
+        throw new Error('認証トークンがありません。ログインしてください。');
+    }
+    return token;
+}
 
 /**
  * 新規登録：非同期関数
  */
 async function createMemo(memo) {
-    try{
+    try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「POSTリクエスト」を送信してメモを作成。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
-        const response = await fetch(apiUrl,{
+        const response = await fetch(`${apiUrl}`, {
             method: 'POST',
-            headers: {'Content-Type': 'application/json'},
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, // Authorizationヘッダーを追加
+            },
+
             // メモオブジェクトをJSON文字列に変換して送信
-            body: JSON.stringify(memo)
+            body: JSON.stringify(memo),
         });
         // レスポンスのボディをJSONとして解析
         const data = await response.json();
         // レスポンスが成功した場合(HTTPステータスコード：200)
-        if (response.ok){
+        if (response.ok) {
             // 成功メッセージをアラートで表示
             displayMessage(data.message);
             // フォームをリセットして新規入力状態に戻す
@@ -57,14 +74,14 @@ async function createMemo(memo) {
             await fetchAndDisplayMemos();
         } else {
             // レスポンスが失敗した場合、エラーメッセージを表示
-            if (response.status === 422){
+            if (response.status === 422) {
                 // バリデーションエラーの場合
                 displayMessage('入力内容に誤りがあります。');
             } else {
                 displayMessage(data.detail);
             }
         }
-    } catch(error){
+    } catch (error) {
         // ネットワークエラーやその他の理由でリクエスト自体が失敗した場合
         console.error('メモ作成中にエラーが発生しました：', error);
     }
@@ -73,20 +90,26 @@ async function createMemo(memo) {
 /**
  * 更新：非同期関数
  */
-async function updateMemo(memo){
-    try{
+async function updateMemo(memo) {
+    try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「POSTリクエスト」を送信してメモを更新。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
         const response = await fetch(`${apiUrl}${editingMemoId}`, {
             method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(memo)
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(memo),
         });
         // レスポンスのボディをJSONとして解析
         const data = await response.json();
         // レスポンスが成功した場合(HTTPステータスコード：200)
-        if (response.ok){
+        if (response.ok) {
             // 成功メッセージをアラートで表示
             displayMessage(data.message);
             // フォームをリセットして新規入力状態に戻す
@@ -95,9 +118,9 @@ async function updateMemo(memo){
             await fetchAndDisplayMemos();
         } else {
             // レスポンスが失敗した場合エラーメッセージを表示
-            if (response.status === 422){
+            if (response.status === 422) {
                 // バリデーションエラーの場合
-                displayMessage('入力内容に誤りがあります。');                
+                displayMessage('入力内容に誤りがあります。');
             } else {
                 displayMessage(data.detail);
             }
@@ -111,11 +134,17 @@ async function updateMemo(memo){
 /**
  * 削除：非同期関数
  */
-async function deleteMemo(memoId){
-    try{
+async function deleteMemo(memoId) {
+    try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「DELETEリクエスト」を送信してメモを削除します。
-        const response = await fetch(`${apiUrl}${memoId}`,{
-            method: 'DELETE'
+        const response = await fetch(`${apiUrl}${memoId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
         // レスポンスのボディをJSONとして解析
         const data = await response.json();
@@ -126,7 +155,7 @@ async function deleteMemo(memoId){
 
             // メモ一覧を最新の状態に更新
             await fetchAndDisplayMemos();
-        } else{
+        } else {
             // レスポンスが失敗した場合、エラーメッセージを表示
             displayMessage(data.detail);
         }
@@ -139,12 +168,20 @@ async function deleteMemo(memoId){
 /**
  * メモ一覧をサーバーから取得して表示する非同期関数
  */
-async function fetchAndDisplayMemos(){
+async function fetchAndDisplayMemos() {
     try {
+        // トークン取得
+        const token = getToken();
+
         // APIに「GETリクエスト」を送信してメモ一覧を取得。
-        const response = await fetch(apiUrl);
+        const response = await fetch(`${apiUrl}`, {
+            method: 'GET',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         // レスポンスが失敗した場合、エラーを投げる。
-        if (!response.ok){
+        if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         // レスポンスのボディをJSONとして解析
@@ -154,7 +191,7 @@ async function fetchAndDisplayMemos(){
         // 一覧をクリア
         memosTableBody.innerHTML = '';
         // 取得したメモのデータを1つずつ設定
-        memos.forEach(memo =>{
+        memos.forEach((memo) => {
             // 行を作成
             const row = document.createElement('tr');
             // 行の中身：タイトル、説明、編集と削除ボタン
@@ -179,15 +216,22 @@ async function fetchAndDisplayMemos(){
 /**
  *  特定のメモを編集するための非同期関数
  */
-async function editMemo(memoId){
+async function editMemo(memoId) {
     // 編集するメモのIDをグローバル変数に設定
     editingMemoId = memoId;
+    // トークン取得
+    const token = getToken();
     // サーバーから特定のIDのメモのデータを取得するリクエストを送信
-    const response = await fetch(`${apiUrl}${memoId}`);
+    const response = await fetch(`${apiUrl}${memoId}`, {
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     // レスポンスのJSONを解析し、メモデータを取得
     const memo = await response.json();
     // レスポンスが正常でなければ、エラーメッセージを表示し、処理を終了
-    if (!response.ok){
+    if (!response.ok) {
         await displayMessage(memo.detail);
         return;
     }
@@ -200,102 +244,143 @@ async function editMemo(memoId){
     // 更新実行ボタンを表示する
     document.getElementById('updateButton').style.display = 'block';
     // 新規登録ボタンを非表示にする
-    document.querySelector('#createMemoForm button[type="submit"]').style.display = 'none';
+    document.querySelector(
+        '#createMemoForm button[type="submit"]'
+    ).style.display = 'none';
 }
 
+/**
+ * チェックボックス状態取得
+ */
+function getCheckboxState(memoId) {
+    const checkbox = document.querySelector(
+        `input[type="checkbox"][data-id="${memoId}"]`
+    );
+    return checkbox ? checkbox.checked : null;
+}
 
 /**
  * 特定のメモのチェックボックスの状態更新用非同期関数
  */
-async function updateCheckBox(memoId, isChecked){    
+async function updateCheckBox(memoId, isChecked) {
+    // トークン取得
+    const token = getToken();
     // サーバーから特定のIDのメモのデータを取得するリクエストを送信
-    const response = await fetch(`${apiUrl}${memoId}`);
+    const response = await fetch(`${apiUrl}${memoId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
     // レスポンスのJSONを解析し、メモデータを取得
     const memo = await response.json();
     // レスポンスが正常でなければ、エラーメッセージを表示し、処理を終了
-    if (!response.ok){
+    if (!response.ok) {
         await displayMessage(memo.detail);
         return;
-    }   
-    memo.is_check = isChecked;  //チェックボックス状態を反映
+    }
+    memo.is_check = isChecked; //チェックボックス状態を反映
     //更新
-    try{
+    try {
         // APIに「POSTリクエスト」を送信してメモを更新。
         // headersに'Content-Type'を'application/json'に設定。
         // JSON形式のデータを送信
         const response = await fetch(`${apiUrl}${memoId}`, {
             method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(memo)
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(memo),
         });
     } catch (error) {
         // ネットワークエラーやその他の理由でリクエスト自体が失敗した場合
         console.error('チェックボックス更新中にエラーが発生しました：', error);
     }
-} 
+}
 
+// ログイン中のユーザー情報の取得
+// function initializeUserId() {
+//     // トークン取得
+//     const token = getToken();
+//     fetch(getuserUrl, {
+//         headers: {
+//             Authorization: `Bearer ${token}`,
+//         },
+//         method: 'GET',
+//         credentials: 'include', // クッキーを含める
+//     })
+//         .then((response) => {
+//             if (!response.ok) {
+//                 throw new Error('ユーザー情報の取得に失敗しました');
+//             }
+//             // return response.json(); // ユーザー情報をJSON形式で取得
+//             currentUserId = response.json().user_id;
+//         })
+//         .then((user) => {
+//             console.log('ログイン中のユーザー:', user);
+//             const userIdElement = document.getElementById('user-id');
+//             userIdElement.textContent = `User ID: ${user.user_id}`; // 画面に表示
+//         })
+//         .catch((error) => {
+//             console.error('エラー:', error);
+//         });
+// }
 
-
-/**
- * ドキュメントの読み込みが完了した後に実行されるイベントリスナー
- * ドキュメントの読み込みが完了した時点で以下コードが実行される
- */
-document.addEventListener('DOMContentLoaded', () =>{
-    // フォームの要素を取得
+// フォームのイベント設定関数
+function initializeFormEvents() {
     const form = document.getElementById('createMemoForm');
-
-    // フォームの送信イベントに対する処理を設定
-    form.onsubmit = async (event) =>{
-        // フォームのデフォルトの送信動作を防止
+    form.onsubmit = async (event) => {
         event.preventDefault();
-        // タイトルと説明の入力値を取得
         const title = document.getElementById('title').value;
         const description = document.getElementById('description').value;
-        // メモオブジェクトを作成
-        const memo = { title, description };
 
-        // 編集中のメモIDがある場合は更新、なければ新規作成を実行
-        if (editingMemoId){
+        if (editingMemoId) {
+            const is_check = getCheckboxState(editingMemoId);
+            const memo = { title, description, is_check };
             await updateMemo(memo);
         } else {
+            const memo = { title, description };
             await createMemo(memo);
         }
     };
+}
 
-    // 更新ボタンのクリックイベントに対する処理を設定
+// 更新ボタンのイベント設定関数
+function initializeUpdateButtonEvent() {
     document.getElementById('updateButton').onclick = async () => {
-        // タイトルと説明の入力値を取得
         const title = document.getElementById('title').value;
         const description = document.getElementById('description').value;
-        // 更新関数を実行
-        await updateMemo({ title, description });
+        const is_check = getCheckboxState(editingMemoId);
+        await updateMemo({ title, description, is_check });
     };
+}
 
-    // メモ一覧テーブル内のクリックイベントを監視
-    // そのためにメモ一覧テーブル内の任意のクリックに対してイベントリスナーを設定
-    document.querySelector('#memos tbody').addEventListener('click', async (event)=>{
-        // クリックされた要素が編集ボタンだった場合の処理
-        if (event.target.className === 'edit'){
-            // クリックされた編集ボタンからメモIDを取得
-            const memoId = event.target.dataset.id;
-            // 編集関数を実行
-            await editMemo(memoId);
-        // クリックされた要素が削除ボタンたった場合の処理
-        } else if(event.target.className === 'delete' ){
-            // クリックされた削除ボタンからメモID を取得
-            const memoId = event.target.dataset.id;
-            // 削除関数を実行
-            await deleteMemo(memoId);
-        // クリックされた要素がチェックボックスだった場合の処理
-        } else if(event.target.type === 'checkbox') {
-            const memoId = event.target.dataset.id;
-            const isChecked = event.target.checked;
-            await updateCheckBox(memoId, isChecked);    //チェックボックス更新
-        }
-    });
-});
+// メモ一覧テーブル内のクリックイベント設定関数
+function initializeTableClickEvents() {
+    document
+        .querySelector('#memos tbody')
+        .addEventListener('click', async (event) => {
+            if (event.target.className === 'edit') {
+                const memoId = event.target.dataset.id;
+                await editMemo(memoId);
+            } else if (event.target.className === 'delete') {
+                const memoId = event.target.dataset.id;
+                await deleteMemo(memoId);
+            } else if (event.target.type === 'checkbox') {
+                const memoId = event.target.dataset.id;
+                const isChecked = event.target.checked;
+                await updateCheckBox(memoId, isChecked);
+            }
+        });
+}
 
 /**
- * ドキュメントの読み込みが完了した時にメモ一覧を表示する関数を呼び出す
+ * ドキュメントの読み込みが完了時の処理
  */
-document.addEventListener('DOMContentLoaded', fetchAndDisplayMemos);
+document.addEventListener('DOMContentLoaded', () => {
+    // initializeUserId();
+    initializeFormEvents();
+    initializeUpdateButtonEvent();
+    initializeTableClickEvents();
+    fetchAndDisplayMemos();
+});

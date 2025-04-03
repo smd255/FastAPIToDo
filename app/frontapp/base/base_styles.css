@@ -1,0 +1,36 @@
+/* Base styles for the navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+}
+
+/* Styles for the title */
+.title {
+  /* font-size: 1.5em; */
+  font-weight: bold;
+  color: #343a40;
+  text-decoration: none;
+}
+
+/* Styles for the navigation links */
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.auth-link {
+  font-size: 1em;
+  color: #343a40;
+  text-decoration: none;
+  background-color: #e9ecef;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+/* Additional styles for hover effects */
+.auth-link:hover {
+  background-color: #dee2e6;
+}

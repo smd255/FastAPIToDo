@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 from routers.memo import router as memo_router
+from routers.auth import router as auth_router
 
 # ===========================================
 # 起動ファイル
@@ -22,8 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # ルーターのマウント
-app.include_router(memo_router)
+app.include_router(memo_router)  # メインページ
+app.include_router(auth_router)  # 認証ページ
 
 
 # バリデーションエラーのカスタムハンドラ

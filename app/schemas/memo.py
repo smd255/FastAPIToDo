@@ -38,6 +38,13 @@ class MemoSchema(InsertAndUpdateMemoSchema):
         example=123,
     )
 
+    # メモを登録したユーザーのID
+    user_id: int = Field(
+        ...,
+        description="メモを登録したユーザーのID",
+        example=123,
+    )
+
 
 # レスポンスで使用する結果用スキーマ
 class ResponseSchema(BaseModel):
