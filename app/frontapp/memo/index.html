@@ -58,6 +58,13 @@
             .then(response => response.text())
             .then(data => {
                 document.getElementById("header").innerHTML = data;
+
+                // 必要なスクリプトを手動で追加して実行する
+                // base.htmlの内部のapp.jsは外部からは実行されない(ブラウザのセキュリティ上の仕様)
+                const script = document.createElement("script");
+                script.type = "module";
+                script.src = "../base/app.js";
+                document.body.appendChild(script);
             });
     </script> 
 </body>
