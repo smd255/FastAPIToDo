@@ -3,9 +3,6 @@ import { displayMessage } from '../util/util.js'; //メッセージ表示関数
 // グローバルスコープでFastAPIのURLを定義
 const apiUrl = 'http://localhost:8000/memos/';
 
-// ユーザーid取得用のurl
-const getuserUrl = 'http://localhost:8000/auth/me';
-
 // 編集中のメモIDを保持する変数
 let editingMemoId = null;
 
@@ -374,11 +371,28 @@ function initializeTableClickEvents() {
         });
 }
 
+// ベースhtml処理用のscriptコール
+function feachBaseScript() {
+    fetch('../base/base.html')
+        .then((response) => response.text())
+        .then((data) => {
+            document.getElementById('header').innerHTML = data;
+
+            // 必要なスクリプトを手動で追加して実行する
+            // base.htmlの内部のapp.jsは外部からは実行されない(ブラウザのセキュリティ上の仕様)
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = '../base/app.js';
+            document.body.appendChild(script);
+        });
+}
+
 /**
  * ドキュメントの読み込みが完了時の処理
  */
 document.addEventListener('DOMContentLoaded', () => {
     // initializeUserId();
+    feachBaseScript();
     initializeFormEvents();
     initializeUpdateButtonEvent();
     initializeTableClickEvents();

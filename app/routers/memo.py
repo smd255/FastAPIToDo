@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.memo import InsertAndUpdateMemoSchema, MemoSchema, ResponseSchema
+from schemas.memo import (
+    InsertAndUpdateMemoSchema,
+    MemoSchema,
+    ResponseSchema,
+    UsernameSchema,
+)
 from schemas.auth import DecodedTokenSchema
 import cruds.memo as memo_crud
 import cruds.auth as auth_crud
@@ -112,3 +117,11 @@ async def remove_memo(
         raise HTTPException(status_code=404, detail="削除対象が見つかりません")
 
     return ResponseSchema(message="メモが正常に削除されました")
+
+
+# ユーザー名取得(フロントエンド用)
+@router.get("/me", response_model=UsernameSchema)
+def read_token_me(token: DecodedTokenSchema = Depends(auth_crud.get_jwt_token)):
+    username = token.username
+
+    return UsernameSchema(username)

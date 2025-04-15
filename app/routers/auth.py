@@ -55,8 +55,8 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
     # デバッグ用
-    print("ユーザー名" + form_data.username)
-    print("パスワード" + form_data.password)
+    # print("ユーザー名" + form_data.username)
+    # print("パスワード" + form_data.password)
     user = await auth_crud.authenticate_user(
         db_session, form_data.username, form_data.password
     )
