@@ -1,5 +1,5 @@
 // ユーザー名取得用のurl
-const getuserUrl = 'http://localhost:8000/memos/me';
+const getuserUrl = 'http://localhost:8000/memos/myuser';
 
 // DOM要素を取得
 const loginButton = document.getElementById('login-button');

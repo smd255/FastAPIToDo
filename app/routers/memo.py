@@ -48,6 +48,15 @@ async def get_memos_list(
     return memos
 
 
+# ユーザー名取得(フロントエンド用)
+# ルート名 me だと似た名前のパスとバッティングする？
+@router.get("/myuser", response_model=UsernameSchema)
+def read_token_me(token: DecodedTokenSchema = Depends(auth_crud.get_jwt_token)):
+    username = token.username
+
+    return UsernameSchema(username=username)
+
+
 # 特定のメモ情報取得のエンドポイント
 @router.get("/{memo_id}", response_model=MemoSchema)
 async def get_memo_detail(
@@ -117,11 +126,3 @@ async def remove_memo(
         raise HTTPException(status_code=404, detail="削除対象が見つかりません")
 
     return ResponseSchema(message="メモが正常に削除されました")
-
-
-# ユーザー名取得(フロントエンド用)
-@router.get("/me", response_model=UsernameSchema)
-def read_token_me(token: DecodedTokenSchema = Depends(auth_crud.get_jwt_token)):
-    username = token.username
-
-    return UsernameSchema(username)
