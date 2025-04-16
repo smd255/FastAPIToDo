@@ -1,23 +1,45 @@
 // ユーザー名取得用のurl
 const getuserUrl = 'http://localhost:8000/memos/myuser';
 
-// DOM要素を取得
-const loginButton = document.getElementById('login-button');
+async function init() {
+    // ボタンの存在を待つ
+    await waitForElement('#login-button');
 
-// ログイン状態取得
-let isLoggedIn = checkLoginStatus();
+    const loginButton = document.getElementById('login-button');
+    const isLoggedIn = await checkLoginStatus();
 
-// 状態に応じて内容を変更
-if (isLoggedIn == true) {
-    loginButton.innerHTML = `<button onclick="logout()" class="auth-link">ログアウト</button>`;
-} else {
-    loginButton.innerHTML = `<a href="../auth/index.html" class="auth-link">ログイン・新規登録</a>`;
+    if (isLoggedIn) {
+        loginButton.innerHTML = `<button onclick="logout()" class="auth-link">ログアウト</button>`;
+    } else {
+        loginButton.innerHTML = `<a href="../auth/index.html" class="auth-link">ログイン・新規登録</a>`;
+    }
 }
+
+// 指定要素の登場を待つユーティリティ関数
+function waitForElement(selector) {
+    return new Promise((resolve) => {
+        const element = document.querySelector(selector);
+        if (element) {
+            return resolve(element);
+        }
+
+        const observer = new MutationObserver(() => {
+            const el = document.querySelector(selector);
+            if (el) {
+                observer.disconnect();
+                resolve(el);
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    });
+}
+
+init(); // 初期化実行
 
 /**
  * 関数定義
  */
-
 // ログイン状態取得
 async function checkLoginStatus() {
     const token = localStorage.getItem('access_token');
