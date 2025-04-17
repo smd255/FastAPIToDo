@@ -1,5 +1,13 @@
+import { displayMessage } from '../util/util.js'; //メッセージ表示関数
+
 // ユーザー名取得用のurl
 const getuserUrl = 'http://localhost:8000/memos/myuser';
+// mainページのurl
+// TODO: 定数をどこかに固める。
+const mainUrl = '../memo/index.html';
+
+// ログインユーザー名
+let loginUser = '';
 
 async function init() {
     // ボタンの存在を待つ
@@ -9,7 +17,15 @@ async function init() {
     const isLoggedIn = await checkLoginStatus();
 
     if (isLoggedIn) {
-        loginButton.innerHTML = `<button onclick="logout()" class="auth-link">ログアウト</button>`;
+        loginButton.innerHTML = `
+        <span class="user-name">${loginUser}</span>
+        <button id="logout-button" class="auth-link">ログアウト</button>
+        <a href="../auth/index.html" class="auth-link">ログイン・新規登録</a>
+      `;
+        // イベント定義
+        document
+            .getElementById('logout-button')
+            .addEventListener('click', logout);
     } else {
         loginButton.innerHTML = `<a href="../auth/index.html" class="auth-link">ログイン・新規登録</a>`;
     }
@@ -55,6 +71,7 @@ async function checkLoginStatus() {
 
         if (res.status === 200) {
             const user = await res.json();
+            loginUser = user.username;
             console.log('ログインユーザー:', user.username);
             return true;
         } else {
@@ -67,11 +84,10 @@ async function checkLoginStatus() {
     }
 }
 
-// ログイン/ログアウト用の関数（例）
-function login() {
-    console.log('ログイン処理を実行');
-}
-
+// ログアウト処理
 function logout() {
-    console.log('ログアウト処理を実行');
+    // ローカルストレージのトークン削除
+    localStorage.removeItem('access_token');
+    displayMessage('ログアウトします。');
+    window.location.reload(); // ← これで確実に再読み込み
 }
