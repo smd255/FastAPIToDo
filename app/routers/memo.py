@@ -1,7 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas.memo import InsertAndUpdateMemoSchema, MemoSchema, ResponseSchema
+from schemas.memo import (
+    InsertAndUpdateMemoSchema,
+    MemoSchema,
+    ResponseSchema,
+    UsernameSchema,
+)
 from schemas.auth import DecodedTokenSchema
 import cruds.memo as memo_crud
 import cruds.auth as auth_crud
@@ -41,6 +46,15 @@ async def get_memos_list(
     # Cookieのuser_id(ログイン中のuser_id)のmemo取得
     memos = await memo_crud.get_memos_by_user_id(db, user.user_id)
     return memos
+
+
+# ユーザー名取得(フロントエンド用)
+# ルート名 me だと似た名前のパスとバッティングする？
+@router.get("/myuser", response_model=UsernameSchema)
+def read_token_me(token: DecodedTokenSchema = Depends(auth_crud.get_jwt_token)):
+    username = token.username
+
+    return UsernameSchema(username=username)
 
 
 # 特定のメモ情報取得のエンドポイント

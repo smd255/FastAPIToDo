@@ -1,8 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-# TODO: 不要になる? OAuth2PasswordRequestForm を使えばいいから？
-
 
 # ===========================================
 # スキーマ定義
@@ -19,8 +17,6 @@ class UserResponseSchema(BaseModel):
     username: str = Field(min_length=2, examples=["user1"])
     created_at: datetime
     updated_at: datetime
-
-    # model_config = ConfigDict(from_attributes=True)
 
 
 # トークンのスキーマ

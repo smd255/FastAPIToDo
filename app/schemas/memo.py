@@ -54,3 +54,12 @@ class ResponseSchema(BaseModel):
         description="API操作の結果を説明するメッセージ",
         example="メモの更新に成功しました。",
     )
+
+
+# フロントエンドのユーザー名取得用スキーマ
+class UsernameSchema(BaseModel):
+    username: str = Field(
+        ...,
+        description="ユーザー名",
+        example="hoge",
+    )

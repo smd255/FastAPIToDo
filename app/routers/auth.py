@@ -4,8 +4,6 @@ from fastapi import APIRouter, HTTPException, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi.security import OAuth2PasswordRequestForm
 
-# from fastapi.responses import JSONResponse
-
 import cruds.auth as auth_crud
 from schemas.auth import (
     UserResponseSchema,
@@ -17,10 +15,6 @@ import db
 
 # ルーターを作成し、タグとURLパスのプレフィックスを認定
 router = APIRouter(tags=["Auth"], prefix="/auth")
-
-# 依存性注入
-# DbDependency = Annotated[AsyncSession, Depends(db.get_dbsession)]
-# FormDependency = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
 # =============================================
@@ -55,8 +49,8 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
 ):
     # デバッグ用
-    print("ユーザー名" + form_data.username)
-    print("パスワード" + form_data.password)
+    # print("ユーザー名" + form_data.username)
+    # print("パスワード" + form_data.password)
     user = await auth_crud.authenticate_user(
         db_session, form_data.username, form_data.password
     )

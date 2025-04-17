@@ -85,6 +85,7 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
 # アクセストークン取得
 def get_jwt_token(token: str = Depends(oauth2_schema)) -> DecodedTokenSchema:
     try:
+        # デコード(有効期限切れで例外)
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username = payload.get("sub")
         user_id = payload.get("id")

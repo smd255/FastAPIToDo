@@ -1,9 +1,9 @@
 import { displayMessage } from '../util/util.js'; //メッセー表示関数
 
 // グローバルスコープでFastAPIのURLを定義
-// TODO:URLは要検討
-const loginUrl = 'http://localhost:8000/auth/login'; //ログイン画面
-const sigunupUrl = 'http://localhost:8000/auth/signup'; //登録用URL
+const loginUrl = 'http://localhost:8000/auth/login'; //ログインAPI用URL
+const sigunupUrl = 'http://localhost:8000/auth/signup'; //登録API用URL
+const mainUrl = '../memo/index.html'; //メインページ
 
 document.addEventListener('DOMContentLoaded', function () {
     const formTitle = document.getElementById('form-title'); // フォームタイトル
@@ -81,8 +81,9 @@ async function signUp(user) {
         // レスポンスが成功した場合(HTTPステータスコード：200)
         if (response.ok) {
             // 成功メッセージをアラートで表示
-            displayMessage(data.message);
-            // TODO:メインページへの遷移？
+            displayMessage('登録成功');
+            isRegister = false; //ログイン側に表示切替
+            window.location.reload(); // 再読み込み
         } else {
             // エラーメッセージ表示
             // TODO:場合分けでエラーメッセージ切り替え
@@ -128,6 +129,8 @@ async function login(user) {
 
         // Authorizationヘッダーに保存する仕組み(ローカルストレージ)
         localStorage.setItem('access_token', token);
+        displayMessage('ログイン成功');
+        window.location.href = mainUrl; // メインページに遷移
     } else {
         console.error('Login failed!');
     }
