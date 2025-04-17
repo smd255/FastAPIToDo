@@ -20,5 +20,5 @@ vscode の LiveServer
 
 ## python のバージョン
 
-3.13.1
+3.13.1  
 ライブラリは requirements.txt を参照
