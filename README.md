@@ -1,14 +1,24 @@
-## à–¾
-FastAPIToDoƒAƒvƒŠŽŽì  
+## èª¬æ˜Ž
 
-## ƒRƒ}ƒ“ƒh
-ƒJƒŒƒ“ƒgƒfƒBƒŒƒNƒgƒŠ‚ðŽÀs‘ÎÛ‚Ìƒ\[ƒX’¼‰º‚É‚·‚éB  
+FastAPIToDo ã‚¢ãƒ—ãƒªè©¦ä½œ
 
-## ƒoƒbƒNƒGƒ“ƒhŽÀs  
-uvicorn main:app --reload  
+## ã‚³ãƒžãƒ³ãƒ‰
 
-## ƒtƒƒ“ƒgƒGƒ“ƒhŽÀs    
-vscode‚ÌLiveServer  
+ã‚«ãƒ¬ãƒ³ãƒˆãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã‚’å®Ÿè¡Œå¯¾è±¡ã®ã‚½ãƒ¼ã‚¹ç›´ä¸‹ã«ã™ã‚‹ã€‚
 
-## DB‰Šú‰»  
-‰‰ñ‹N“®‘O‚É‚Íinit_datebase.py ‚ðŽÀs‚µADB‰Šú‰»‚ª•K—v  
+## ãƒãƒƒã‚¯ã‚¨ãƒ³ãƒ‰å®Ÿè¡Œ
+
+uvicorn main:app --reload
+
+## ãƒ•ãƒ­ãƒ³ãƒˆã‚¨ãƒ³ãƒ‰å®Ÿè¡Œ
+
+vscode ã® LiveServer
+
+## DB åˆæœŸåŒ–
+
+åˆå›žèµ·å‹•å‰ã«ã¯ init_datebase.py ã‚’å®Ÿè¡Œã—ã€DB åˆæœŸåŒ–ãŒå¿…è¦
+
+## python ã®ãƒãƒ¼ã‚¸ãƒ§ãƒ³
+
+3.13.1
+ãƒ©ã‚¤ãƒ–ãƒ©ãƒªã¯ requirements.txt ã‚’å‚ç…§
