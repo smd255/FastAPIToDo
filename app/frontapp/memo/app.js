@@ -295,34 +295,6 @@ async function updateCheckBox(memoId, isChecked) {
     }
 }
 
-// ログイン中のユーザー情報の取得
-// function initializeUserId() {
-//     // トークン取得
-//     const token = getToken();
-//     fetch(getuserUrl, {
-//         headers: {
-//             Authorization: `Bearer ${token}`,
-//         },
-//         method: 'GET',
-//         credentials: 'include', // クッキーを含める
-//     })
-//         .then((response) => {
-//             if (!response.ok) {
-//                 throw new Error('ユーザー情報の取得に失敗しました');
-//             }
-//             // return response.json(); // ユーザー情報をJSON形式で取得
-//             currentUserId = response.json().user_id;
-//         })
-//         .then((user) => {
-//             console.log('ログイン中のユーザー:', user);
-//             const userIdElement = document.getElementById('user-id');
-//             userIdElement.textContent = `User ID: ${user.user_id}`; // 画面に表示
-//         })
-//         .catch((error) => {
-//             console.error('エラー:', error);
-//         });
-// }
-
 // フォームのイベント設定関数
 function initializeFormEvents() {
     const form = document.getElementById('createMemoForm');

@@ -27,22 +27,6 @@ async def insert_memo(
     return new_memo
 
 
-# 全件取得
-# async def get_memos(db_session: AsyncSession) -> list[memo_model.Memo]:
-#     """
-#     データベースから全てのメモを取得する関数
-#     Args:
-#         db_session(AsyncSession): 非同期セッション
-#     Returns:
-#         list[Memo]: 取得された全てのメモのリスト
-#     """
-#     print("=== 全件取得：開始 ===")
-#     result = await db_session.execute(select(memo_model.Memo))  # 全メモ選択
-#     memos = result.scalars().all()  # 全結果をリストとして格納
-#     print(">>> データ全件取得完了")
-#     return memos
-
-
 # ユーザー単位で全件取得
 async def get_memos_by_user_id(db: AsyncSession, user_id: int):
     result = await db.execute(

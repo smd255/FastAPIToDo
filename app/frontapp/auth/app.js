@@ -1,7 +1,6 @@
 import { displayMessage } from '../util/util.js'; //メッセー表示関数
 
 // グローバルスコープでFastAPIのURLを定義
-// TODO:URLは要検討
 const loginUrl = 'http://localhost:8000/auth/login'; //ログインAPI用URL
 const sigunupUrl = 'http://localhost:8000/auth/signup'; //登録API用URL
 const mainUrl = '../memo/index.html'; //メインページ

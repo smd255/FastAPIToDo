@@ -3,7 +3,6 @@ import { displayMessage } from '../util/util.js'; //メッセージ表示関数
 // ユーザー名取得用のurl
 const getuserUrl = 'http://localhost:8000/memos/myuser';
 // mainページのurl
-// TODO: 定数をどこかに固める。
 const mainUrl = '../memo/index.html';
 
 // ログインユーザー名
