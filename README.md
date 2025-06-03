@@ -12,7 +12,8 @@ uvicorn main:app --reload
 
 ## フロントエンド実行
 
-vscode の LiveServer
+vscode の LiveServer  
+memo>index.html で実行
 
 ## DB 初期化
 
@@ -22,3 +23,8 @@ vscode の LiveServer
 
 3.13.1  
 ライブラリは requirements.txt を参照
+
+## 画面説明
+
+![メイン画面](doc/images/01_index.png)  
+ログイン前の状態です。
